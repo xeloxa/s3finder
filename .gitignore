@@ -1,5 +1,5 @@
 # Binaries
-s3finder
+/s3finder
 *.exe
 
 # IDE
