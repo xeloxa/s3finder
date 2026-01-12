@@ -38,7 +38,7 @@ func NewOllama(cfg *Config) (*Ollama, error) {
 
 	model := cfg.Model
 	if model == "" {
-		model = "llama3"
+		model = "llama3.2"
 	}
 
 	temp := cfg.Temperature

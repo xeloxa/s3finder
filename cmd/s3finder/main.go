@@ -48,10 +48,10 @@ Examples:
 
 	// AI flags
 	rootCmd.Flags().BoolVar(&cfg.AIEnabled, "ai", cfg.AIEnabled, "Enable AI-powered name generation")
-	rootCmd.Flags().StringVar(&cfg.AIProvider, "ai-provider", cfg.AIProvider, "AI provider (openai, ollama, anthropic)")
+	rootCmd.Flags().StringVar(&cfg.AIProvider, "ai-provider", cfg.AIProvider, "AI provider (openai, ollama, anthropic, gemini)")
 	rootCmd.Flags().StringVar(&cfg.AIModel, "ai-model", cfg.AIModel, "AI model name")
-	rootCmd.Flags().StringVar(&cfg.AIKey, "ai-key", "", "AI provider API key (or use env: OPENAI_API_KEY, ANTHROPIC_API_KEY)")
-	rootCmd.Flags().StringVar(&cfg.AIBaseURL, "ai-url", "", "AI provider base URL (for Ollama)")
+	rootCmd.Flags().StringVar(&cfg.AIKey, "ai-key", "", "AI provider API key (or use env: OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY)")
+	rootCmd.Flags().StringVar(&cfg.AIBaseURL, "ai-url", "", "AI provider base URL (for custom endpoints or proxies)")
 	rootCmd.Flags().IntVar(&cfg.AICount, "ai-count", cfg.AICount, "Number of AI-generated names")
 
 	// Output flags
@@ -97,6 +97,8 @@ func run(cmd *cobra.Command, args []string) error {
 			cfg.AIKey = os.Getenv("OPENAI_API_KEY")
 		case "anthropic":
 			cfg.AIKey = os.Getenv("ANTHROPIC_API_KEY")
+		case "gemini":
+			cfg.AIKey = os.Getenv("GEMINI_API_KEY")
 		}
 	}
 

@@ -45,6 +45,8 @@ func NewGenerator(cfg *Config) (Generator, error) {
 		return NewOllama(cfg)
 	case "anthropic":
 		return NewAnthropic(cfg)
+	case "gemini":
+		return NewGemini(cfg)
 	default:
 		return NewOpenAI(cfg)
 	}

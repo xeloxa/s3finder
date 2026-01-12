@@ -31,7 +31,7 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 ## Features
 
 - **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
-- **AI-Powered Generation** — OpenAI, Ollama, or Anthropic generate smart bucket name variations
+- **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate smart bucket name variations
 - **Permutation Engine** — 780+ automatic variations per seed (suffixes, prefixes, years, regions)
 - **Adaptive Rate Limiting** — AIMD algorithm auto-adjusts to avoid throttling and IP blocks
 - **Deep Inspection** — AWS SDK integration reveals region, ACL status, and sample objects
@@ -140,8 +140,15 @@ s3finder -s acme-corp --ai
 export ANTHROPIC_API_KEY=sk-ant-xxxxx
 s3finder -s acme-corp --ai --ai-provider anthropic
 
+# Google Gemini
+export GEMINI_API_KEY=xxxxx
+s3finder -s acme-corp --ai --ai-provider gemini
+
 # Local Ollama
 s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://localhost:11434
+
+# Using a proxy or custom endpoint
+s3finder -s acme-corp --ai --ai-provider openai --ai-url https://your-proxy.com/v1
 ```
 
 ### High-Speed Scanning
@@ -177,10 +184,10 @@ s3finder -s acme-corp --no-color
 | `--timeout` | | `10` | Request timeout in seconds |
 | `--deep` | | `true` | Perform deep inspection on found buckets |
 | `--ai` | | `false` | Enable AI-powered name generation |
-| `--ai-provider` | | `openai` | AI provider: `openai`, `ollama`, `anthropic` |
+| `--ai-provider` | | `openai` | AI provider: `openai`, `ollama`, `anthropic`, `gemini` |
 | `--ai-model` | | *provider default* | AI model name |
 | `--ai-key` | | | API key (or use environment variables) |
-| `--ai-url` | | | Base URL for Ollama |
+| `--ai-url` | | | Base URL for custom endpoints or proxies |
 | `--ai-count` | | `50` | Number of AI-generated names |
 | `--output` | `-o` | `results.json` | Output file path |
 | `--format` | `-f` | `json` | Output format: `json`, `txt` |
@@ -195,6 +202,7 @@ s3finder -s acme-corp --no-color
 |----------|-------------|
 | `OPENAI_API_KEY` | OpenAI API key for AI generation |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude |
+| `GEMINI_API_KEY` | Google Gemini API key |
 
 ---
 

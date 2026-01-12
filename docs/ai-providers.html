@@ -53,7 +53,7 @@
     <main class="main-content">
       <header class="content-header">
         <h1>AI Providers</h1>
-        <p>Configure AI-powered bucket name generation with OpenAI, Ollama, or Anthropic.</p>
+        <p>Configure AI-powered bucket name generation with OpenAI, Ollama, Anthropic, or Gemini.</p>
       </header>
 
       <div class="content-body">
@@ -81,6 +81,11 @@
             <h3>Anthropic</h3>
             <p>Cloud-based Claude models. High quality alternative.</p>
             <span class="badge badge-warning">Alternative</span>
+          </div>
+          <div class="card">
+            <h3>Gemini</h3>
+            <p>Google's Gemini models. Fast and cost-effective.</p>
+            <span class="badge badge-info">New</span>
           </div>
         </div>
 
@@ -174,6 +179,49 @@ s3finder -s acme-corp --ai --ai-provider anthropic --ai-model &lt;model-name&gt;
           </tbody>
         </table>
         <p>Check <a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank">Anthropic's documentation</a> for the latest available models.</p>
+
+        <h2>Gemini Configuration</h2>
+        <h3>Setup</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Set API key via environment variable
+export GEMINI_API_KEY=xxxxx
+
+# Use Gemini
+s3finder -s acme-corp --ai --ai-provider gemini
+
+# Use a specific model
+s3finder -s acme-corp --ai --ai-provider gemini --ai-model &lt;model-name&gt;</code></pre>
+
+        <h3>Model Selection</h3>
+        <p>Choose a model based on your needs:</p>
+        <table>
+          <thead><tr><th>Type</th><th>Speed</th><th>Quality</th><th>Cost</th></tr></thead>
+          <tbody>
+            <tr><td>Flash (fast)</td><td>Fast</td><td>Good</td><td>Low</td></tr>
+            <tr><td>Pro (balanced)</td><td>Medium</td><td>Excellent</td><td>Medium</td></tr>
+          </tbody>
+        </table>
+        <p>Check <a href="https://ai.google.dev/gemini-api/docs/models" target="_blank">Google's documentation</a> for the latest available models.</p>
+
+        <h2>Custom Base URL (Proxy Support)</h2>
+        <p>All providers support custom base URLs for proxies or self-hosted endpoints:</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># OpenAI with proxy
+s3finder -s acme-corp --ai --ai-provider openai --ai-url https://your-proxy.com/v1
+
+# Anthropic with custom endpoint
+s3finder -s acme-corp --ai --ai-provider anthropic --ai-url https://your-proxy.com
+
+# Gemini with proxy
+s3finder -s acme-corp --ai --ai-provider gemini --ai-url https://your-proxy.com
+
+# Ollama on remote server
+s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://192.168.1.100:11434</code></pre>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>Use <code>--ai-url</code> when you need to route requests through a corporate proxy, use a self-hosted LLM endpoint, or connect to a remote Ollama instance.</div>
+        </div>
 
         <h2>How AI Generation Works</h2>
         <p>The AI generates bucket names like a "lazy sysadmin" would create them:</p>

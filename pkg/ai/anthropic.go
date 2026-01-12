@@ -13,6 +13,7 @@ import (
 type Anthropic struct {
 	apiKey      string
 	model       string
+	baseURL     string
 	temperature float64
 	client      *http.Client
 }
@@ -47,7 +48,12 @@ func NewAnthropic(cfg *Config) (*Anthropic, error) {
 
 	model := cfg.Model
 	if model == "" {
-		model = "claude-3-haiku-20240307"
+		model = "claude-3-5-haiku-20241022"
+	}
+
+	baseURL := cfg.BaseURL
+	if baseURL == "" {
+		baseURL = "https://api.anthropic.com"
 	}
 
 	temp := cfg.Temperature
@@ -58,6 +64,7 @@ func NewAnthropic(cfg *Config) (*Anthropic, error) {
 	return &Anthropic{
 		apiKey:      cfg.APIKey,
 		model:       model,
+		baseURL:     baseURL,
 		temperature: temp,
 		client: &http.Client{
 			Timeout: 60 * time.Second,
@@ -83,7 +90,7 @@ func (a *Anthropic) Generate(ctx context.Context, seed string, count int) ([]str
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.anthropic.com/v1/messages", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", a.baseURL+"/v1/messages", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
