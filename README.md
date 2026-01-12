@@ -2,8 +2,6 @@
   <img src="logo.png" alt="s3finder" width="400">
 </p>
 
-<h1 align="center">s3finder</h1>
-
 <p align="center">
   <strong>AI-Powered S3 Bucket Enumeration Tool</strong>
 </p>
