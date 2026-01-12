@@ -3,6 +3,7 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -70,36 +71,28 @@ func (i *Inspector) Inspect(ctx context.Context, bucket string) *InspectResult {
 
 // getBucketRegion determines which AWS region hosts the bucket.
 func (i *Inspector) getBucketRegion(ctx context.Context, bucket string) (string, error) {
-	// Use anonymous credentials for region lookup
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion("us-east-1"),
-		config.WithCredentialsProvider(aws.AnonymousCredentials{}),
-	)
+	// Use HTTP HEAD request to get region from x-amz-bucket-region header
+	// This is more reliable than GetBucketLocation which requires permissions
+	url := fmt.Sprintf("https://%s.s3.amazonaws.com", bucket)
+
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
 	if err != nil {
-		return "", err
+		return "us-east-1", nil
 	}
 
-	client := s3.NewFromConfig(cfg)
-
-	// GetBucketLocation returns the region
-	output, err := client.GetBucketLocation(ctx, &s3.GetBucketLocationInput{
-		Bucket: aws.String(bucket),
-	})
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
-		// Try to extract region from error message or headers
-		if strings.Contains(err.Error(), "PermanentRedirect") {
-			// Parse region from redirect
-			return i.parseRegionFromError(err.Error()), nil
-		}
-		return "us-east-1", nil // Default to us-east-1
+		return "us-east-1", nil
+	}
+	defer resp.Body.Close()
+
+	// x-amz-bucket-region header is returned regardless of access permissions
+	if region := resp.Header.Get("x-amz-bucket-region"); region != "" {
+		return region, nil
 	}
 
-	region := string(output.LocationConstraint)
-	if region == "" {
-		region = "us-east-1" // Empty means us-east-1
-	}
-
-	return region, nil
+	return "us-east-1", nil
 }
 
 // checkPublicAccess attempts anonymous listing to determine if bucket is public.
@@ -146,7 +139,7 @@ func (i *Inspector) checkPublicAccess(ctx context.Context, bucket, region string
 		}
 	}
 
-	count := int(*output.KeyCount)
+	count := len(output.Contents)
 	if output.IsTruncated != nil && *output.IsTruncated {
 		count = -2 // Indicates more than returned
 	}
