@@ -119,6 +119,7 @@ func run(cmd *cobra.Command, args []string) error {
 	realtimeWriter := output.NewRealtime(&output.RealtimeConfig{
 		Output:    os.Stdout,
 		UseColors: !cfg.NoColor,
+		UseLinks:  !cfg.NoColor, // Enable clickable links when colors are enabled
 		Verbose:   cfg.Verbose,
 	})
 

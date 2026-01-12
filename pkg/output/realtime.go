@@ -20,12 +20,21 @@ const (
 	colorGray   = "\033[90m"
 )
 
+// OSC 8 hyperlink escape sequences
+// Format: \033]8;;URL\033\\TEXT\033]8;;\033\\
+const (
+	hyperlinkStart = "\033]8;;"
+	hyperlinkMid   = "\033\\"
+	hyperlinkEnd   = "\033]8;;\033\\"
+)
+
 // RealtimeWriter outputs results to terminal with colors.
 type RealtimeWriter struct {
-	out       io.Writer
-	mu        sync.Mutex
-	useColors bool
-	verbose   bool
+	out        io.Writer
+	mu         sync.Mutex
+	useColors  bool
+	useLinks   bool
+	verbose    bool
 
 	// Counters for summary
 	found   int64
@@ -36,9 +45,10 @@ type RealtimeWriter struct {
 
 // RealtimeConfig configures the realtime writer.
 type RealtimeConfig struct {
-	Output    io.Writer
-	UseColors bool
-	Verbose   bool
+	Output     io.Writer
+	UseColors  bool
+	UseLinks   bool // Enable clickable hyperlinks
+	Verbose    bool
 }
 
 // NewRealtime creates a new realtime terminal writer.
@@ -47,6 +57,7 @@ func NewRealtime(cfg *RealtimeConfig) *RealtimeWriter {
 		cfg = &RealtimeConfig{
 			Output:    os.Stdout,
 			UseColors: true,
+			UseLinks:  true,
 			Verbose:   false,
 		}
 	}
@@ -59,6 +70,7 @@ func NewRealtime(cfg *RealtimeConfig) *RealtimeWriter {
 	return &RealtimeWriter{
 		out:       out,
 		useColors: cfg.UseColors,
+		useLinks:  cfg.UseLinks,
 		verbose:   cfg.Verbose,
 	}
 }
@@ -100,6 +112,15 @@ func (r *RealtimeWriter) formatPublic(result *scanner.ScanResult) string {
 		tag = colorGreen + tag + colorReset
 	}
 
+	// Build bucket URL
+	bucketURL := fmt.Sprintf("https://%s.s3.amazonaws.com", result.Bucket)
+	bucketDisplay := result.Bucket
+
+	// Make bucket name clickable if links enabled
+	if r.useLinks {
+		bucketDisplay = r.makeHyperlink(bucketURL, result.Bucket)
+	}
+
 	details := ""
 	if result.Inspect != nil {
 		if result.Inspect.ObjectCount > 0 {
@@ -115,13 +136,22 @@ func (r *RealtimeWriter) formatPublic(result *scanner.ScanResult) string {
 		details = colorGray + details + colorReset
 	}
 
-	return fmt.Sprintf("%s %s%s", tag, result.Bucket, details)
+	return fmt.Sprintf("%s %s%s", tag, bucketDisplay, details)
 }
 
 func (r *RealtimeWriter) formatPrivate(result *scanner.ScanResult) string {
 	tag := "[PRIVATE]"
 	if r.useColors {
 		tag = colorYellow + tag + colorReset
+	}
+
+	// Build bucket URL
+	bucketURL := fmt.Sprintf("https://%s.s3.amazonaws.com", result.Bucket)
+	bucketDisplay := result.Bucket
+
+	// Make bucket name clickable if links enabled
+	if r.useLinks {
+		bucketDisplay = r.makeHyperlink(bucketURL, result.Bucket)
 	}
 
 	details := ""
@@ -132,7 +162,13 @@ func (r *RealtimeWriter) formatPrivate(result *scanner.ScanResult) string {
 		}
 	}
 
-	return fmt.Sprintf("%s %s%s", tag, result.Bucket, details)
+	return fmt.Sprintf("%s %s%s", tag, bucketDisplay, details)
+}
+
+// makeHyperlink creates an OSC 8 terminal hyperlink
+// Supported by: iTerm2, Windows Terminal, GNOME Terminal, Konsole, etc.
+func (r *RealtimeWriter) makeHyperlink(url, text string) string {
+	return hyperlinkStart + url + hyperlinkMid + text + hyperlinkEnd
 }
 
 func (r *RealtimeWriter) formatError(result *scanner.ScanResult) string {
