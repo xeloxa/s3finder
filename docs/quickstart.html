@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Start - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link active">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Quick Start</h1>
+        <p>Get up and running with s3finder in under 5 minutes.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Your First Scan</h2>
+        <p>Run your first scan with a single command:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>s3finder -s your-target-company</code></pre>
+
+        <p>Replace <code>your-target-company</code> with the organization you're authorized to test. s3finder generates 780+ bucket name variations automatically.</p>
+
+        <h2>Understanding the Output</h2>
+        <div class="code-header">
+          <span class="code-lang">text</span>
+        </div>
+        <pre><code>     ____  _____  __ _           _
+    / ___|___ / / _(_)_ __   __| | ___ _ __
+    \___ \ |_ \| |_| | '_ \ / _` |/ _ \ '__|
+     ___) |__) |  _| | | | | (_| |  __/ |
+    |____/____/|_| |_|_| |_|\__,_|\___|_|
+                                        v1.0.0
+    AI-Powered S3 Bucket Enumeration Tool
+    ─────────────────────────────────────────
+
+Permutation engine generated 780 names
+Generated 780 unique bucket names to scan
+
+[PUBLIC] target-backup (objects: 1547, region: us-east-1)
+         https://target-backup.s3.amazonaws.com
+[PRIVATE] target-internal (region: eu-west-1)
+
+────────────────────────────────────────
+Scan completed in 45s
+Scanned: 780 | Found: 2 | Public: 1 | Private: 1 | Errors: 12
+Results saved to: results.json</code></pre>
+
+        <h3>Result Types</h3>
+        <table>
+          <thead>
+            <tr><th>Tag</th><th>Meaning</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-success">PUBLIC</span></td>
+              <td>Bucket is publicly readable</td>
+              <td>URL shown - can browse contents</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-warning">PRIVATE</span></td>
+              <td>Bucket exists but access denied</td>
+              <td>Requires credentials</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Adding a Wordlist</h2>
+        <p>Combine permutations with a custom wordlist:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>s3finder -s target-company -w wordlists/common.txt</code></pre>
+
+        <p>The included wordlist has 130 common bucket name patterns.</p>
+
+        <h2>Enabling AI Generation</h2>
+        <p>For smarter bucket name suggestions:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Set your API key
+export OPENAI_API_KEY=sk-xxxxx
+
+# Run with AI enabled
+s3finder -s target-company --ai</code></pre>
+
+        <h2>High-Speed Scanning</h2>
+        <p>Increase workers and requests per second:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>s3finder -s target-company -t 200 --rps 1000</code></pre>
+
+        <div class="alert alert-warning">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>High RPS may trigger AWS rate limiting. The adaptive rate limiter will automatically slow down if throttled.</div>
+        </div>
+
+        <h2>Viewing Results</h2>
+        <p>Results are saved to <code>results.json</code> by default:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Pretty print JSON results
+cat results.json | jq .
+
+# Or use plain text format
+s3finder -s target-company -o results.txt -f txt</code></pre>
+
+        <h2>Next Steps</h2>
+        <div class="card-grid">
+          <a href="usage.html" class="card">
+            <h3>Basic Usage</h3>
+            <p>Learn all the command-line options.</p>
+          </a>
+          <a href="ai-providers.html" class="card">
+            <h3>AI Providers</h3>
+            <p>Configure OpenAI, Ollama, or Anthropic.</p>
+          </a>
+        </div>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('.code-header').nextElementSibling;
+      navigator.clipboard.writeText(pre.querySelector('code').textContent);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    }
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

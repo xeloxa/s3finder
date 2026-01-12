@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Installation - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link active">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Installation</h1>
+        <p>Download and install s3finder on your system.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Download Binary</h2>
+        <p>The easiest way to install s3finder is to download a pre-built binary for your platform.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Architecture</th>
+              <th>Download</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Linux</td>
+              <td>amd64</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-linux-amd64.tar.gz</a></td>
+            </tr>
+            <tr>
+              <td>Linux</td>
+              <td>arm64</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-linux-arm64.tar.gz</a></td>
+            </tr>
+            <tr>
+              <td>macOS</td>
+              <td>Intel</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-darwin-amd64.tar.gz</a></td>
+            </tr>
+            <tr>
+              <td>macOS</td>
+              <td>Apple Silicon</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-darwin-arm64.tar.gz</a></td>
+            </tr>
+            <tr>
+              <td>Windows</td>
+              <td>amd64</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-windows-amd64.zip</a></td>
+            </tr>
+            <tr>
+              <td>Windows</td>
+              <td>arm64</td>
+              <td><a href="https://github.com/xeloxa/s3finder/releases/latest">s3finder-windows-arm64.zip</a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Linux / macOS</h3>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Download (replace with your platform)
+curl -LO https://github.com/xeloxa/s3finder/releases/latest/download/s3finder-darwin-arm64.tar.gz
+
+# Extract
+tar -xzf s3finder-darwin-arm64.tar.gz
+
+# Move to PATH
+sudo mv s3finder /usr/local/bin/
+
+# Verify installation
+s3finder version</code></pre>
+
+        <h3>Windows</h3>
+        <div class="code-header">
+          <span class="code-lang">powershell</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Download and extract
+Invoke-WebRequest -Uri "https://github.com/xeloxa/s3finder/releases/latest/download/s3finder-windows-amd64.zip" -OutFile "s3finder.zip"
+Expand-Archive -Path "s3finder.zip" -DestinationPath "C:\Tools\s3finder"
+
+# Add to PATH (run as Administrator)
+$env:Path += ";C:\Tools\s3finder"
+[Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
+
+# Verify
+s3finder version</code></pre>
+
+        <h2>Homebrew</h2>
+        <p>If you use Homebrew on macOS or Linux:</p>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>brew install xeloxa/tap/s3finder</code></pre>
+
+        <h2>Go Install</h2>
+        <p>If you have Go 1.21+ installed:</p>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>go install github.com/xeloxa/s3finder/cmd/s3finder@latest</code></pre>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>Make sure <code>$GOPATH/bin</code> is in your PATH.</div>
+        </div>
+
+        <h2>Build from Source</h2>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Clone the repository
+git clone https://github.com/xeloxa/s3finder.git
+cd s3finder
+
+# Build for current platform
+make build
+
+# Or build for all platforms
+make build-all</code></pre>
+
+        <h3>Requirements</h3>
+        <ul>
+          <li>Go 1.21 or later</li>
+          <li>Git</li>
+          <li>Make (optional)</li>
+        </ul>
+
+        <h2>Verify Installation</h2>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>s3finder version
+# Output: s3finder version v1.0.0
+
+s3finder --help
+# Shows all available commands and flags</code></pre>
+
+        <h2>Platform Notes</h2>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>
+            <strong>Windows:</strong> Use Windows Terminal or PowerShell for best color support.
+          </div>
+        </div>
+
+        <p><strong>macOS:</strong> Both Intel and Apple Silicon are natively supported. No Rosetta required.</p>
+        <p><strong>Linux:</strong> ARM64 builds available for Raspberry Pi and AWS Graviton.</p>
+
+        <h2>Next Steps</h2>
+        <p>Head over to the <a href="quickstart.html">Quick Start</a> guide to run your first scan.</p>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('.code-header').nextElementSibling;
+      navigator.clipboard.writeText(pre.querySelector('code').textContent);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    }
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

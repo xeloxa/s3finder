@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Output Formats - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link active">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Output Formats</h1>
+        <p>Understanding s3finder's real-time output and report formats.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Real-Time Terminal Output</h2>
+        <p>During scanning, results display in real-time with color-coded status:</p>
+
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>     ____  _____  __ _           _
+    / ___|___ / / _(_)_ __   __| | ___ _ __
+    \___ \ |_ \| |_| | '_ \ / _` |/ _ \ '__|
+     ___) |__) |  _| | | | | (_| |  __/ |
+    |____/____/|_| |_|_| |_|\__,_|\___|_|
+                                        v1.0.0
+
+[PUBLIC] acme-backup (objects: 1547, region: us-east-1)
+         https://acme-backup.s3.amazonaws.com
+[PRIVATE] acme-internal (region: eu-west-1)
+
+────────────────────────────────────────
+Scan completed in 45s
+Scanned: 780 | Found: 2 | Public: 1 | Private: 1</code></pre>
+
+        <h3>Status Tags</h3>
+        <table>
+          <thead><tr><th>Tag</th><th>Color</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>[PUBLIC]</code></td><td>Green</td><td>Bucket is publicly readable (HTTP 200)</td></tr>
+            <tr><td><code>[PRIVATE]</code></td><td>Yellow</td><td>Bucket exists but access denied (HTTP 403)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>JSON Output Format</h2>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>s3finder -s acme-corp -o results.json -f json</code></pre>
+
+        <h3>JSON Structure</h3>
+        <div class="code-header"><span class="code-lang">json</span></div>
+        <pre><code>{
+  "scan_info": {
+    "seed": "acme-corp",
+    "started_at": "2024-01-15T10:30:00Z",
+    "completed_at": "2024-01-15T10:30:45Z",
+    "duration_seconds": 45,
+    "total_scanned": 780,
+    "total_found": 2,
+    "ai_enabled": false
+  },
+  "results": [
+    {
+      "bucket": "acme-backup",
+      "status": "public",
+      "region": "us-east-1",
+      "url": "https://acme-backup.s3.amazonaws.com",
+      "acl": "public-read",
+      "object_count": 1547,
+      "sample_objects": [
+        "backup-2024-01-01.tar.gz",
+        "config/settings.json"
+      ]
+    }
+  ]
+}</code></pre>
+
+        <h3>JSON Fields</h3>
+        <table>
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>scan_info.seed</code></td><td>string</td><td>Seed keyword used</td></tr>
+            <tr><td><code>scan_info.duration_seconds</code></td><td>number</td><td>Scan duration</td></tr>
+            <tr><td><code>results[].bucket</code></td><td>string</td><td>Bucket name</td></tr>
+            <tr><td><code>results[].status</code></td><td>string</td><td>"public" or "private"</td></tr>
+            <tr><td><code>results[].region</code></td><td>string</td><td>AWS region</td></tr>
+            <tr><td><code>results[].object_count</code></td><td>number</td><td>Object count (public only)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Plain Text Output</h2>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>s3finder -s acme-corp -o results.txt -f txt</code></pre>
+
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>s3finder Scan Report
+====================
+Seed: acme-corp
+Date: 2024-01-15 10:30:00
+Duration: 45s
+Scanned: 780 | Found: 2
+
+RESULTS
+-------
+
+[PUBLIC] acme-backup
+  Region: us-east-1
+  URL: https://acme-backup.s3.amazonaws.com
+  Objects: 1547
+
+[PRIVATE] acme-internal
+  Region: eu-west-1</code></pre>
+
+        <h2>Processing Output</h2>
+        <h3>Using jq</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># List only public buckets
+cat results.json | jq '.results[] | select(.status == "public") | .bucket'
+
+# Get all bucket URLs
+cat results.json | jq -r '.results[].url'</code></pre>
+
+        <h3>Piping</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Disable colors for clean piping
+s3finder -s acme --no-color | tee scan.log</code></pre>
+
+        <h2>Output Options</h2>
+        <table>
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--output, -o</code></td><td>results.json</td><td>Output file path</td></tr>
+            <tr><td><code>--format, -f</code></td><td>json</td><td>Format (json, txt)</td></tr>
+            <tr><td><code>--no-color</code></td><td>false</td><td>Disable colors</td></tr>
+            <tr><td><code>--verbose, -v</code></td><td>false</td><td>Show errors</td></tr>
+          </tbody>
+        </table>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>Results are written to file only after scan completes. Real-time results always display in terminal.</div>
+        </div>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

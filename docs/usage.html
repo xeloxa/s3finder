@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic Usage - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link active">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Basic Usage</h1>
+        <p>Complete guide to using s3finder command-line options.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Command Syntax</h2>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>s3finder [flags]
+s3finder [command]</code></pre>
+
+        <h2>Required Flags</h2>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--seed</code></td><td><code>-s</code></td><td>Target keyword for bucket name generation (required)</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Input Options</h2>
+        <h3>Seed Keyword</h3>
+        <p>The seed is the base keyword for generating bucket name variations:</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Company name
+s3finder -s acme-corp
+
+# Product name
+s3finder -s myproduct
+
+# Domain without TLD
+s3finder -s example</code></pre>
+
+        <h3>Wordlist</h3>
+        <p>Combine with a wordlist for additional coverage:</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Use included wordlist
+s3finder -s acme -w wordlists/common.txt
+
+# Use custom wordlist
+s3finder -s acme -w /path/to/custom-wordlist.txt</code></pre>
+
+        <h2>Performance Options</h2>
+        <table>
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--threads, -t</code></td><td>100</td><td>Number of concurrent workers</td></tr>
+            <tr><td><code>--rps</code></td><td>500</td><td>Maximum requests per second</td></tr>
+            <tr><td><code>--timeout</code></td><td>10</td><td>Request timeout in seconds</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Conservative scan (slower, less rate limiting)
+s3finder -s acme -t 50 --rps 100
+
+# Aggressive scan (faster, may trigger rate limiting)
+s3finder -s acme -t 200 --rps 1000
+
+# Custom timeout for slow networks
+s3finder -s acme --timeout 30</code></pre>
+
+        <h2>Inspection Options</h2>
+        <table>
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--deep</code></td><td>true</td><td>Perform deep inspection on found buckets</td></tr>
+          </tbody>
+        </table>
+
+        <p>Deep inspection uses AWS SDK to gather:</p>
+        <ul>
+          <li>Bucket region</li>
+          <li>ACL status (public-read, private)</li>
+          <li>Object count (for public buckets)</li>
+          <li>Sample object keys (first 10)</li>
+        </ul>
+
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Disable deep inspection for faster scans
+s3finder -s acme --deep=false</code></pre>
+
+        <h2>Output Options</h2>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--output</code></td><td><code>-o</code></td><td>results.json</td><td>Output file path</td></tr>
+            <tr><td><code>--format</code></td><td><code>-f</code></td><td>json</td><td>Output format (json, txt)</td></tr>
+            <tr><td><code>--no-color</code></td><td></td><td>false</td><td>Disable colored output</td></tr>
+            <tr><td><code>--verbose</code></td><td><code>-v</code></td><td>false</td><td>Verbose output</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Save as JSON
+s3finder -s acme -o scan-results.json
+
+# Save as plain text
+s3finder -s acme -o scan-results.txt -f txt
+
+# Pipe-friendly output (no colors)
+s3finder -s acme --no-color | tee output.log
+
+# Verbose mode (shows errors)
+s3finder -s acme -v</code></pre>
+
+        <h2>AI Options</h2>
+        <p>See <a href="ai-providers.html">AI Providers</a> for detailed configuration.</p>
+        <table>
+          <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--ai</code></td><td>false</td><td>Enable AI-powered name generation</td></tr>
+            <tr><td><code>--ai-provider</code></td><td>openai</td><td>AI provider (openai, ollama, anthropic)</td></tr>
+            <tr><td><code>--ai-model</code></td><td>gpt-4o-mini</td><td>AI model name</td></tr>
+            <tr><td><code>--ai-count</code></td><td>50</td><td>Number of AI-generated names</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Commands</h2>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Show version
+s3finder version
+
+# Show help
+s3finder --help
+
+# Generate shell completions
+s3finder completion bash > /etc/bash_completion.d/s3finder</code></pre>
+
+        <h2>Examples</h2>
+        <h3>Basic Penetration Test</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>s3finder -s target-corp -w wordlists/common.txt -o pentest-results.json</code></pre>
+
+        <h3>Bug Bounty Hunting</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>export OPENAI_API_KEY=sk-xxxxx
+s3finder -s bugbounty-target --ai -t 200 --rps 800</code></pre>
+
+        <h3>Quiet Background Scan</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code>s3finder -s target --no-color -o results.json 2>/dev/null &</code></pre>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('.code-header').nextElementSibling;
+      navigator.clipboard.writeText(pre.querySelector('code').textContent);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    }
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

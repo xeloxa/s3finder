@@ -1,12 +1,8 @@
-```
-     ____  _____  __ _           _
-    / ___|___ / / _(_)_ __   __| | ___ _ __
-    \___ \ |_ \| |_| | '_ \ / _` |/ _ \ '__|
-     ___) |__) |  _| | | | | (_| |  __/ |
-    |____/____/|_| |_|_| |_|\__,_|\___|_|
-```
+<p align="center">
+  <img src="logo.png" alt="s3finder" width="400">
+</p>
 
-# s3finder
+<h1 align="center">s3finder</h1>
 
 **AI-Powered S3 Bucket Enumeration Tool**
 

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link active">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Configuration Reference</h1>
+        <p>Complete reference for all s3finder flags and environment variables.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Command-Line Flags</h2>
+
+        <h3>Input Options</h3>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--seed</code></td><td><code>-s</code></td><td><em>required</em></td><td>Target keyword for bucket name generation</td></tr>
+            <tr><td><code>--wordlist</code></td><td><code>-w</code></td><td></td><td>Path to wordlist file</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Performance Options</h3>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--threads</code></td><td><code>-t</code></td><td>100</td><td>Number of concurrent workers</td></tr>
+            <tr><td><code>--rps</code></td><td></td><td>500</td><td>Maximum requests per second</td></tr>
+            <tr><td><code>--timeout</code></td><td></td><td>10</td><td>Request timeout in seconds</td></tr>
+            <tr><td><code>--deep</code></td><td></td><td>true</td><td>Perform deep inspection on found buckets</td></tr>
+          </tbody>
+        </table>
+
+        <h3>AI Options</h3>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--ai</code></td><td></td><td>false</td><td>Enable AI-powered name generation</td></tr>
+            <tr><td><code>--ai-provider</code></td><td></td><td>openai</td><td>AI provider: openai, ollama, anthropic</td></tr>
+            <tr><td><code>--ai-model</code></td><td></td><td>gpt-4o-mini</td><td>AI model name</td></tr>
+            <tr><td><code>--ai-key</code></td><td></td><td></td><td>API key (or use environment variables)</td></tr>
+            <tr><td><code>--ai-url</code></td><td></td><td></td><td>Base URL for Ollama</td></tr>
+            <tr><td><code>--ai-count</code></td><td></td><td>50</td><td>Number of AI-generated names</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Output Options</h3>
+        <table>
+          <thead><tr><th>Flag</th><th>Short</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--output</code></td><td><code>-o</code></td><td>results.json</td><td>Output file path</td></tr>
+            <tr><td><code>--format</code></td><td><code>-f</code></td><td>json</td><td>Output format: json, txt</td></tr>
+            <tr><td><code>--no-color</code></td><td></td><td>false</td><td>Disable colored output</td></tr>
+            <tr><td><code>--verbose</code></td><td><code>-v</code></td><td>false</td><td>Verbose output</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Environment Variables</h2>
+        <table>
+          <thead><tr><th>Variable</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>OPENAI_API_KEY</code></td><td>OpenAI API key for AI generation</td></tr>
+            <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Anthropic API key for Claude</td></tr>
+          </tbody>
+        </table>
+
+        <h2>HTTP Client Configuration</h2>
+        <p>The internal HTTP client is optimized for high-throughput scanning:</p>
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>MaxIdleConns</td><td>1000</td><td>Maximum idle connections</td></tr>
+            <tr><td>MaxIdleConnsPerHost</td><td>100</td><td>Max idle connections per host</td></tr>
+            <tr><td>MaxConnsPerHost</td><td>100</td><td>Max connections per host</td></tr>
+            <tr><td>IdleConnTimeout</td><td>30s</td><td>Idle connection timeout</td></tr>
+            <tr><td>TLSHandshakeTimeout</td><td>5s</td><td>TLS handshake timeout</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Rate Limiting</h2>
+        <p>s3finder uses an adaptive AIMD rate limiter:</p>
+        <ul>
+          <li><strong>Ceiling:</strong> User-defined via <code>--rps</code> flag</li>
+          <li><strong>Floor:</strong> 10 RPS minimum</li>
+          <li><strong>Decrease:</strong> Halves RPS after 3 consecutive 429/503 responses</li>
+          <li><strong>Increase:</strong> +10% RPS every 100 successful requests</li>
+        </ul>
+
+        <h2>Permutation Patterns</h2>
+        <p>The permutation engine generates variations using these patterns:</p>
+
+        <h3>Suffixes</h3>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>-dev, -prod, -staging, -backup, -backups, -logs, -assets, -internal, -public, -private, -data, -files, -media, -static, -cdn, -api, -web, -app, -test, -temp, -archive, -old, -new, -v2, -beta</code></pre>
+
+        <h3>Prefixes</h3>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>dev-, prod-, staging-, backup-, test-, internal-, public-, private-, temp-, old-</code></pre>
+
+        <h3>Years</h3>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>-2022, -2023, -2024, -2025, -22, -23, -24, -25</code></pre>
+
+        <h3>Regions</h3>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>-us-east-1, -us-east-2, -us-west-1, -us-west-2, -eu-west-1, -eu-west-2, -eu-central-1, -ap-south-1, -ap-northeast-1, -ap-southeast-1</code></pre>
+
+        <h2>S3 Bucket Naming Rules</h2>
+        <p>s3finder validates all generated names against AWS S3 bucket naming rules:</p>
+        <ul>
+          <li>Length: 3-63 characters</li>
+          <li>Lowercase letters, numbers, hyphens, and dots only</li>
+          <li>Must start and end with a letter or number</li>
+          <li>No consecutive periods</li>
+          <li>Cannot be formatted as an IP address</li>
+        </ul>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

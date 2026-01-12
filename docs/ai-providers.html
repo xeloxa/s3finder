@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Providers - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link active">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>AI Providers</h1>
+        <p>Configure AI-powered bucket name generation with OpenAI, Ollama, or Anthropic.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>Overview</h2>
+        <p>s3finder uses LLMs to generate intelligent bucket name variations. The AI thinks like a "lazy sysadmin" to predict common naming patterns.</p>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>AI generation is optional. The permutation engine alone generates 780+ variations per seed.</div>
+        </div>
+
+        <h2>Supported Providers</h2>
+        <div class="card-grid">
+          <div class="card">
+            <h3>OpenAI</h3>
+            <p>Cloud-based, best quality. Requires API key with per-request costs.</p>
+            <span class="badge badge-info">Recommended</span>
+          </div>
+          <div class="card">
+            <h3>Ollama</h3>
+            <p>Local, free, and private. Requires local GPU/resources.</p>
+            <span class="badge badge-success">Free</span>
+          </div>
+          <div class="card">
+            <h3>Anthropic</h3>
+            <p>Cloud-based Claude models. High quality alternative.</p>
+            <span class="badge badge-warning">Alternative</span>
+          </div>
+        </div>
+
+        <h2>OpenAI Configuration</h2>
+        <h3>Setup</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Set API key via environment variable
+export OPENAI_API_KEY=sk-xxxxx
+
+# Or pass directly (not recommended)
+s3finder -s target --ai --ai-key sk-xxxxx</code></pre>
+
+        <h3>Usage</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Use default model
+s3finder -s acme-corp --ai
+
+# Use a specific model
+s3finder -s acme-corp --ai --ai-model &lt;model-name&gt;
+
+# Generate more names
+s3finder -s acme-corp --ai --ai-count 100</code></pre>
+
+        <h3>Model Selection</h3>
+        <p>Choose a model based on your needs:</p>
+        <table>
+          <thead><tr><th>Type</th><th>Speed</th><th>Quality</th><th>Cost</th></tr></thead>
+          <tbody>
+            <tr><td>Mini/Small models</td><td>Fast</td><td>Good</td><td>Low</td></tr>
+            <tr><td>Standard models</td><td>Medium</td><td>Excellent</td><td>Medium</td></tr>
+            <tr><td>Large/Turbo models</td><td>Slow</td><td>Excellent</td><td>High</td></tr>
+          </tbody>
+        </table>
+        <p>Check <a href="https://platform.openai.com/docs/models" target="_blank">OpenAI's documentation</a> for the latest available models.</p>
+
+        <h2>Ollama Configuration</h2>
+        <h3>Prerequisites</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Install Ollama (macOS)
+brew install ollama
+
+# Start Ollama server
+ollama serve
+
+# Download a model
+ollama pull &lt;model-name&gt;</code></pre>
+
+        <h3>Usage</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Use local Ollama
+s3finder -s acme-corp --ai --ai-provider ollama
+
+# Custom model
+s3finder -s acme-corp --ai --ai-provider ollama --ai-model &lt;model-name&gt;
+
+# Custom Ollama URL
+s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://192.168.1.100:11434</code></pre>
+
+        <h3>Model Selection</h3>
+        <p>Choose a model based on your hardware:</p>
+        <table>
+          <thead><tr><th>Size</th><th>Quality</th><th>RAM Required</th></tr></thead>
+          <tbody>
+            <tr><td>7-8B parameters</td><td>Good</td><td>8GB</td></tr>
+            <tr><td>13-14B parameters</td><td>Better</td><td>16GB</td></tr>
+            <tr><td>70B+ parameters</td><td>Excellent</td><td>48GB+</td></tr>
+          </tbody>
+        </table>
+        <p>Check <a href="https://ollama.com/library" target="_blank">Ollama's model library</a> for available models.</p>
+
+        <h2>Anthropic Configuration</h2>
+        <h3>Setup</h3>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Set API key via environment variable
+export ANTHROPIC_API_KEY=sk-ant-xxxxx
+
+# Use Anthropic
+s3finder -s acme-corp --ai --ai-provider anthropic
+
+# Use a specific model
+s3finder -s acme-corp --ai --ai-provider anthropic --ai-model &lt;model-name&gt;</code></pre>
+
+        <h3>Model Selection</h3>
+        <p>Choose a model based on your needs:</p>
+        <table>
+          <thead><tr><th>Type</th><th>Speed</th><th>Quality</th><th>Cost</th></tr></thead>
+          <tbody>
+            <tr><td>Haiku (fast)</td><td>Fast</td><td>Good</td><td>Low</td></tr>
+            <tr><td>Sonnet (balanced)</td><td>Medium</td><td>Excellent</td><td>Medium</td></tr>
+            <tr><td>Opus (powerful)</td><td>Slow</td><td>Best</td><td>High</td></tr>
+          </tbody>
+        </table>
+        <p>Check <a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank">Anthropic's documentation</a> for the latest available models.</p>
+
+        <h2>How AI Generation Works</h2>
+        <p>The AI generates bucket names like a "lazy sysadmin" would create them:</p>
+        <ul>
+          <li>Predictable patterns (backup, logs, assets)</li>
+          <li>Year suffixes (2023, 2024, 2025)</li>
+          <li>Environment prefixes (dev, prod, staging)</li>
+          <li>Region suffixes (us-east-1, eu-west-1)</li>
+          <li>Abbreviations and shortcuts</li>
+        </ul>
+
+        <h3>Example AI Output</h3>
+        <p>For seed "acme-corp", the AI might generate:</p>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>acme-corp-backup-2024
+acme-corp-internal-assets
+dev-acme-corp-logs
+acme-corp-db-exports
+acme-corp-config-backup
+staging-acme-corp-uploads
+acme-corp-customer-data
+acme-corp-analytics-reports</code></pre>
+
+        <h2>Best Practices</h2>
+        <div class="alert alert-success">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <strong>Recommendations:</strong>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+              <li>Start with the permutation engine alone</li>
+              <li>Add AI if you need more coverage</li>
+              <li>Use Ollama for privacy-sensitive targets</li>
+              <li>Small/mini models offer the best cost/quality ratio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

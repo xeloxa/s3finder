@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>s3finder - AI-Powered S3 Bucket Enumeration Tool</title>
+  <meta name="description" content="High-performance S3 bucket enumeration tool with AI-powered name generation for security researchers.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link active">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link">Architecture</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero">
+        <div class="hero-badge">Open Source Security Tool</div>
+        <img src="images/logo.png" alt="s3finder" class="hero-logo">
+        <h1 class="visually-hidden">s3finder</h1>
+        <p>AI-powered S3 bucket enumeration tool for security researchers and penetration testers. Discover misconfigured buckets with intelligent name generation.</p>
+        <div class="hero-buttons">
+          <a href="quickstart.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Get Started
+          </a>
+          <a href="https://github.com/xeloxa/s3finder" class="btn btn-secondary" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            View on GitHub
+          </a>
+        </div>
+      </section>
+
+      <div class="content-body">
+        <div class="alert alert-warning">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <strong>Legal Notice:</strong> This tool is intended for authorized security testing only. Only scan buckets belonging to organizations you have explicit permission to test.
+          </div>
+        </div>
+
+        <h2>Key Features</h2>
+        <div class="feature-grid">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <h3>High-Concurrency</h3>
+            <p>Worker pool architecture handles thousands of requests with adaptive rate limiting.</p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </div>
+            <h3>AI-Powered</h3>
+            <p>OpenAI, Ollama, or Anthropic generate smart bucket name variations.</p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h3>Permutation Engine</h3>
+            <p>780+ automatic variations per seed including suffixes, prefixes, and regions.</p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Deep Inspection</h3>
+            <p>AWS SDK reveals region, ACL status, and sample objects from discovered buckets.</p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>Cross-Platform</h3>
+            <p>Native binaries for Linux, macOS, and Windows on both AMD64 and ARM64.</p>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h3>Multiple Outputs</h3>
+            <p>Export results as JSON or plain text with real-time terminal display.</p>
+          </div>
+        </div>
+
+        <h2>Quick Example</h2>
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Basic scan with permutations
+s3finder -s acme-corp
+
+# With AI-powered name generation
+export OPENAI_API_KEY=sk-xxxxx
+s3finder -s acme-corp --ai
+
+# High-speed scan with custom settings
+s3finder -s acme-corp -t 200 --rps 1000 -w wordlists/common.txt</code></pre>
+
+        <h2>Sample Output</h2>
+        <div class="code-header">
+          <span class="code-lang">text</span>
+        </div>
+        <pre><code>[PUBLIC] acme-corp-backup (objects: 1547, region: us-east-1)
+         https://acme-corp-backup.s3.amazonaws.com
+[PRIVATE] acme-corp-internal (region: eu-west-1)
+[PUBLIC] acme-corp-assets-2024 (objects: 100+, region: us-west-2)
+         https://acme-corp-assets-2024.s3.amazonaws.com
+
+────────────────────────────────────────
+Scan completed in 2m34s
+Scanned: 828 | Found: 3 | Public: 2 | Private: 1 | Errors: 0</code></pre>
+
+        <h2>Supported Platforms</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Architecture</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Linux</td><td>amd64</td><td><span class="badge badge-success">Supported</span></td></tr>
+            <tr><td>Linux</td><td>arm64</td><td><span class="badge badge-success">Supported</span></td></tr>
+            <tr><td>macOS</td><td>Intel (amd64)</td><td><span class="badge badge-success">Supported</span></td></tr>
+            <tr><td>macOS</td><td>Apple Silicon</td><td><span class="badge badge-success">Supported</span></td></tr>
+            <tr><td>Windows</td><td>amd64</td><td><span class="badge badge-success">Supported</span></td></tr>
+            <tr><td>Windows</td><td>arm64</td><td><span class="badge badge-success">Supported</span></td></tr>
+          </tbody>
+        </table>
+
+        <h2>Next Steps</h2>
+        <div class="card-grid">
+          <a href="installation.html" class="card">
+            <h3>Installation</h3>
+            <p>Download and install s3finder on your system.</p>
+          </a>
+          <a href="quickstart.html" class="card">
+            <h3>Quick Start</h3>
+            <p>Get up and running in under 5 minutes.</p>
+          </a>
+        </div>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('.code-header').nextElementSibling;
+      const code = pre.querySelector('code').textContent;
+      navigator.clipboard.writeText(code);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    }
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

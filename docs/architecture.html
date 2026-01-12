@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture - s3finder Documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="docs-wrapper">
+    <!-- Mobile Menu -->
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="images/logo.png" alt="s3finder">
+        </a>
+        <div class="sidebar-version">v1.0.0</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Getting Started</div>
+          <a href="index.html" class="nav-link">Introduction</a>
+          <a href="installation.html" class="nav-link">Installation</a>
+          <a href="quickstart.html" class="nav-link">Quick Start</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Usage Guide</div>
+          <a href="usage.html" class="nav-link">Basic Usage</a>
+          <a href="ai-providers.html" class="nav-link">AI Providers</a>
+          <a href="output.html" class="nav-link">Output Formats</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Reference</div>
+          <a href="configuration.html" class="nav-link">Configuration</a>
+          <a href="architecture.html" class="nav-link active">Architecture</a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Resources</div>
+          <a href="https://github.com/xeloxa/s3finder" class="nav-link" target="_blank">GitHub</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+        <h1>Architecture</h1>
+        <p>Technical overview of s3finder's internal design and components.</p>
+      </header>
+
+      <div class="content-body">
+        <h2>System Overview</h2>
+        <div class="arch-diagram">┌─────────────────────────────────────────────────────────────────┐
+│                         SCANNER ORCHESTRATOR                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │   Wordlist   │    │  AI Generator │    │  Permutation │       │
+│  │    Loader    │───▶│   (optional)  │───▶│    Engine    │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│         │                   │                    │               │
+│         └───────────────────┴────────────────────┘               │
+│                             │                                    │
+│                             ▼                                    │
+│                   ┌──────────────────┐                          │
+│                   │   names channel   │  (buffered, size=1000)   │
+│                   └────────┬─────────┘                          │
+│                            │                                     │
+│         ┌──────────────────┼──────────────────┐                 │
+│         ▼                  ▼                  ▼                 │
+│   ┌──────────┐       ┌──────────┐       ┌──────────┐           │
+│   │ Worker 1 │       │ Worker 2 │       │ Worker N │           │
+│   │  Prober  │       │  Prober  │       │  Prober  │           │
+│   └────┬─────┘       └────┬─────┘       └────┬─────┘           │
+│        │                  │                  │                  │
+│        └──────────────────┼──────────────────┘                  │
+│                           ▼                                     │
+│                 ┌──────────────────┐                            │
+│                 │  results channel  │                            │
+│                 └────────┬─────────┘                            │
+│                          │                                       │
+│              ┌───────────┴───────────┐                          │
+│              ▼                       ▼                          │
+│     ┌─────────────┐          ┌─────────────┐                    │
+│     │  Inspector  │          │   Output    │                    │
+│     │ (SDK deep)  │          │   Writer    │                    │
+│     └─────────────┘          └─────────────┘                    │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+        <h2>Project Structure</h2>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code>s3finder/
+├── cmd/s3finder/          # CLI entrypoint
+│   └── main.go            # Cobra CLI setup, flag parsing
+├── pkg/
+│   ├── scanner/           # Core scanning logic
+│   │   ├── scanner.go     # Worker pool orchestrator
+│   │   ├── prober.go      # HTTP bucket checker
+│   │   └── inspector.go   # AWS SDK deep inspection
+│   ├── ai/                # AI name generation
+│   │   ├── generator.go   # Provider interface
+│   │   ├── openai.go      # OpenAI implementation
+│   │   ├── ollama.go      # Ollama implementation
+│   │   └── anthropic.go   # Anthropic implementation
+│   ├── permutation/       # Name generation
+│   │   └── engine.go      # Suffix/prefix/year patterns
+│   ├── ratelimit/         # Rate limiting
+│   │   └── adaptive.go    # AIMD rate limiter
+│   └── output/            # Result output
+│       ├── writer.go      # Writer interface
+│       ├── realtime.go    # Terminal output
+│       └── report.go      # JSON/TXT reports
+├── internal/config/       # Configuration
+│   └── config.go          # Config structs, defaults
+├── wordlists/             # Default wordlists
+│   └── common.txt         # 130 common patterns
+├── Makefile               # Build automation
+└── .goreleaser.yaml       # Release automation</code></pre>
+
+        <h2>Core Components</h2>
+        <div class="component-list">
+          <div class="component-item">
+            <h4>Scanner Orchestrator</h4>
+            <p>Coordinates the entire scanning process. Manages worker pool, channels, and graceful shutdown.</p>
+            <code>pkg/scanner/scanner.go</code>
+          </div>
+          <div class="component-item">
+            <h4>HTTP Prober</h4>
+            <p>Performs HEAD requests to S3 endpoints. Optimized HTTP client with connection pooling.</p>
+            <code>pkg/scanner/prober.go</code>
+          </div>
+          <div class="component-item">
+            <h4>Deep Inspector</h4>
+            <p>Uses AWS SDK to gather detailed bucket info: region, ACL, object listing.</p>
+            <code>pkg/scanner/inspector.go</code>
+          </div>
+          <div class="component-item">
+            <h4>Adaptive Rate Limiter</h4>
+            <p>AIMD algorithm that auto-adjusts based on 429/503 responses from AWS.</p>
+            <code>pkg/ratelimit/adaptive.go</code>
+          </div>
+          <div class="component-item">
+            <h4>Permutation Engine</h4>
+            <p>Generates 780+ bucket name variations using common patterns.</p>
+            <code>pkg/permutation/engine.go</code>
+          </div>
+          <div class="component-item">
+            <h4>AI Generator</h4>
+            <p>Provider-agnostic interface for LLM-powered name generation.</p>
+            <code>pkg/ai/generator.go</code>
+          </div>
+        </div>
+
+        <h2>Data Flow</h2>
+        <ol>
+          <li><strong>Name Generation:</strong> Wordlist + Permutation Engine + AI (optional) produce unique bucket names</li>
+          <li><strong>Channel Feed:</strong> Names are fed into a buffered channel (backpressure-safe)</li>
+          <li><strong>Worker Pool:</strong> N workers read from channel, each with its own HTTP client</li>
+          <li><strong>Probing:</strong> HTTP HEAD request to <code>https://{bucket}.s3.amazonaws.com</code></li>
+          <li><strong>Rate Limiting:</strong> Each request passes through adaptive rate limiter</li>
+          <li><strong>Result Processing:</strong> Hits (200/403) go to Inspector for deep analysis</li>
+          <li><strong>Output:</strong> Results stream to terminal and accumulate for final report</li>
+        </ol>
+
+        <h2>Probe Results</h2>
+        <table>
+          <thead><tr><th>HTTP Status</th><th>Result</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>200</td><td>BucketExists</td><td>Bucket is publicly readable</td></tr>
+            <tr><td>403</td><td>BucketForbidden</td><td>Bucket exists but access denied</td></tr>
+            <tr><td>404</td><td>BucketNotFound</td><td>Bucket does not exist</td></tr>
+            <tr><td>301/307</td><td>BucketForbidden</td><td>Redirect (bucket in different region)</td></tr>
+            <tr><td>Other</td><td>BucketError</td><td>Network error or unexpected response</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Concurrency Model</h2>
+        <p>s3finder uses Go's goroutines and channels for high-performance concurrent scanning:</p>
+        <ul>
+          <li><strong>Producer:</strong> Single goroutine feeds names into buffered channel</li>
+          <li><strong>Consumers:</strong> N worker goroutines read from channel and probe buckets</li>
+          <li><strong>Results:</strong> Workers send results to output channel</li>
+          <li><strong>Shutdown:</strong> Context cancellation propagates to all workers</li>
+        </ul>
+
+        <div class="alert alert-info">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>The buffered channel (size 1000) provides backpressure - if workers can't keep up, the producer blocks until space is available.</div>
+        </div>
+
+        <h2>Dependencies</h2>
+        <table>
+          <thead><tr><th>Package</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>github.com/spf13/cobra</code></td><td>CLI framework</td></tr>
+            <tr><td><code>github.com/aws/aws-sdk-go-v2</code></td><td>AWS SDK for deep inspection</td></tr>
+            <tr><td><code>github.com/sashabaranov/go-openai</code></td><td>OpenAI API client</td></tr>
+            <tr><td><code>golang.org/x/time/rate</code></td><td>Token bucket rate limiter</td></tr>
+            <tr><td><code>golang.org/x/sys/windows</code></td><td>Windows ANSI color support</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="docs-footer">
+        <p>s3finder v1.0.0 - Built with Go. Licensed under MIT.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.querySelector('.sidebar').classList.toggle('open');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>
