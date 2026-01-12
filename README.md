@@ -24,6 +24,10 @@
 
 A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
 
+<p align="center">
+  <img src="banner.png" alt="S3Finder Banner" width="100%">
+</p>
+
 ## Features
 
 - **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
