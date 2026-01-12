@@ -136,7 +136,15 @@ func (r *RealtimeWriter) formatPublic(result *scanner.ScanResult) string {
 		details = colorGray + details + colorReset
 	}
 
-	return fmt.Sprintf("%s %s%s", tag, bucketDisplay, details)
+	// For PUBLIC buckets, always show the URL on a new line
+	urlLine := ""
+	if r.useColors {
+		urlLine = fmt.Sprintf("\n         %s%s%s", colorCyan, bucketURL, colorReset)
+	} else {
+		urlLine = fmt.Sprintf("\n         %s", bucketURL)
+	}
+
+	return fmt.Sprintf("%s %s%s%s", tag, bucketDisplay, details, urlLine)
 }
 
 func (r *RealtimeWriter) formatPrivate(result *scanner.ScanResult) string {
