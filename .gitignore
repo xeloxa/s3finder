@@ -1,0 +1,21 @@
+# Binaries
+s3finder
+*.exe
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+/tmp/
+
+# Output files
+results.json
+results.txt
+*.log
