@@ -2,15 +2,29 @@
   <img src="logo.png" alt="s3finder" width="400">
 </p>
 
-**AI-Powered S3 Bucket Enumeration Tool**
+<h1 align="center">s3finder</h1>
 
-A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
+<p align="center">
+  <strong>AI-Powered S3 Bucket Enumeration Tool</strong>
+</p>
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](https://github.com/xeloxa/s3finder/releases)
+<p align="center">
+  <a href="https://xeloxa.github.io/s3finder/">Documentation</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#features">Features</a>
+</p>
+
+<p align="center">
+  <a href="https://xeloxa.github.io/s3finder/"><img src="https://img.shields.io/badge/Docs-GitHub%20Pages-blue?style=flat" alt="Documentation"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go" alt="Go Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
+  <a href="https://github.com/xeloxa/s3finder/releases"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey" alt="Platform"></a>
+</p>
 
 ---
+
+A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
 
 ## Features
 
@@ -117,7 +131,7 @@ export ANTHROPIC_API_KEY=sk-ant-xxxxx
 s3finder -s acme-corp --ai --ai-provider anthropic
 
 # Local Ollama
-s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://localhost:11434 --ai-model llama3
+s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://localhost:11434
 ```
 
 ### High-Speed Scanning
@@ -154,7 +168,7 @@ s3finder -s acme-corp --no-color
 | `--deep` | | `true` | Perform deep inspection on found buckets |
 | `--ai` | | `false` | Enable AI-powered name generation |
 | `--ai-provider` | | `openai` | AI provider: `openai`, `ollama`, `anthropic` |
-| `--ai-model` | | `gpt-4o-mini` | AI model name |
+| `--ai-model` | | *provider default* | AI model name |
 | `--ai-key` | | | API key (or use environment variables) |
 | `--ai-url` | | | Base URL for Ollama |
 | `--ai-count` | | `50` | Number of AI-generated names |
