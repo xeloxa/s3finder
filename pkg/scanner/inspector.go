@@ -97,6 +97,11 @@ func (i *Inspector) getBucketRegion(ctx context.Context, bucket string) (string,
 
 // checkPublicAccess attempts anonymous listing to determine if bucket is public.
 func (i *Inspector) checkPublicAccess(ctx context.Context, bucket, region string) (bool, string, []string, int) {
+	return i.checkPublicAccessWithRetry(ctx, bucket, region, false)
+}
+
+// checkPublicAccessWithRetry attempts anonymous listing with region retry support.
+func (i *Inspector) checkPublicAccessWithRetry(ctx context.Context, bucket, region string, retried bool) (bool, string, []string, int) {
 	if region == "" || region == "unknown" {
 		region = "us-east-1"
 	}
@@ -118,11 +123,23 @@ func (i *Inspector) checkPublicAccess(ctx context.Context, bucket, region string
 		MaxKeys: aws.Int32(100),
 	})
 	if err != nil {
+		errStr := err.Error()
+
+		// Check for region mismatch - retry with correct region
+		if !retried && (strings.Contains(errStr, "BucketRegionError") ||
+			strings.Contains(errStr, "PermanentRedirect") ||
+			strings.Contains(errStr, "please use the correct region")) {
+			correctRegion := i.parseRegionFromError(errStr)
+			if correctRegion != "" && correctRegion != region {
+				return i.checkPublicAccessWithRetry(ctx, bucket, correctRegion, true)
+			}
+		}
+
 		// Check if it's an access denied error
-		if strings.Contains(err.Error(), "AccessDenied") {
+		if strings.Contains(errStr, "AccessDenied") {
 			return false, "private", nil, -1
 		}
-		if strings.Contains(err.Error(), "AllAccessDisabled") {
+		if strings.Contains(errStr, "AllAccessDisabled") {
 			return false, "disabled", nil, -1
 		}
 		return false, "unknown", nil, -1

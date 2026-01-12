@@ -37,7 +37,7 @@ func Default() *Config {
 	return &Config{
 		Workers:      100,
 		MaxRPS:       500,
-		Timeout:      10,
+		Timeout:      30,
 		DeepInspect:  true,
 		Wordlist:     "",
 		AIEnabled:    false,
