@@ -75,6 +75,7 @@ brews:
       owner: xeloxa
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
     homepage: "https://github.com/xeloxa/s3finder"
     description: "AI-powered S3 bucket enumeration tool"
     license: "MIT"
