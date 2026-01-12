@@ -12,6 +12,10 @@
 
 A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
 
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](https://github.com/xeloxa/s3finder/releases)
+
 ---
 
 ## Features
@@ -23,23 +27,70 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 - **Deep Inspection** — AWS SDK integration reveals region, ACL status, and sample objects
 - **Real-Time Output** — Colored terminal output shows discoveries as they happen
 - **Multiple Formats** — Export results as JSON or TXT for post-processing
+- **Cross-Platform** — Native binaries for Linux, macOS, and Windows (amd64 & arm64)
 
 ---
 
 ## Installation
 
-### From Source
+### Download Binary (Recommended)
+
+Download the latest release for your platform:
+
+| Platform | Architecture | Download |
+|----------|--------------|----------|
+| Linux | amd64 | [s3finder-linux-amd64.tar.gz](https://github.com/xeloxa/s3finder/releases/latest) |
+| Linux | arm64 | [s3finder-linux-arm64.tar.gz](https://github.com/xeloxa/s3finder/releases/latest) |
+| macOS | Intel | [s3finder-darwin-amd64.tar.gz](https://github.com/xeloxa/s3finder/releases/latest) |
+| macOS | Apple Silicon | [s3finder-darwin-arm64.tar.gz](https://github.com/xeloxa/s3finder/releases/latest) |
+| Windows | amd64 | [s3finder-windows-amd64.zip](https://github.com/xeloxa/s3finder/releases/latest) |
+| Windows | arm64 | [s3finder-windows-arm64.zip](https://github.com/xeloxa/s3finder/releases/latest) |
+
+### Homebrew (macOS/Linux)
+
+```bash
+brew install xeloxa/tap/s3finder
+```
+
+### Go Install
 
 ```bash
 go install github.com/xeloxa/s3finder/cmd/s3finder@latest
 ```
 
-### Build Locally
+### Build from Source
 
 ```bash
 git clone https://github.com/xeloxa/s3finder.git
 cd s3finder
+
+# Build for current platform
+make build
+
+# Build for all platforms
+make build-all
+
+# Or use go directly
 go build -o s3finder ./cmd/s3finder
+```
+
+---
+
+## Quick Start
+
+```bash
+# Basic scan with permutations
+s3finder -s acme-corp
+
+# With wordlist
+s3finder -s acme-corp -w wordlists/common.txt
+
+# With AI generation
+export OPENAI_API_KEY=sk-xxxxx
+s3finder -s acme-corp --ai
+
+# High-speed scan
+s3finder -s acme-corp -t 200 --rps 1000
 ```
 
 ---
@@ -129,6 +180,38 @@ s3finder -s acme-corp --no-color
 
 ---
 
+## Build Commands
+
+```bash
+# Build for current platform
+make build
+
+# Build for all platforms (Linux, macOS, Windows × amd64, arm64)
+make build-all
+
+# Build for specific platform
+make build-linux
+make build-darwin
+make build-windows
+
+# Run tests
+make test
+
+# Run tests with coverage
+make test-cover
+
+# Create release archives
+make release
+
+# Clean build artifacts
+make clean
+
+# Show all available commands
+make help
+```
+
+---
+
 ## Output Example
 
 ### Terminal Output
@@ -186,6 +269,34 @@ Results saved to: results.json
 
 ---
 
+## Supported Platforms
+
+| Platform | Architecture | Status |
+|----------|--------------|--------|
+| Linux | amd64 | ✅ Supported |
+| Linux | arm64 | ✅ Supported |
+| macOS | amd64 (Intel) | ✅ Supported |
+| macOS | arm64 (Apple Silicon) | ✅ Supported |
+| Windows | amd64 | ✅ Supported |
+| Windows | arm64 | ✅ Supported |
+
+### Platform-Specific Notes
+
+**Windows:**
+- ANSI colors are enabled automatically on Windows 10+
+- Use PowerShell or Windows Terminal for best experience
+- Legacy cmd.exe may not display colors correctly
+
+**macOS:**
+- Both Intel and Apple Silicon are natively supported
+- No Rosetta required for M1/M2/M3 Macs
+
+**Linux:**
+- Works on all major distributions
+- ARM64 builds for Raspberry Pi and AWS Graviton
+
+---
+
 ## Architecture
 
 ```
@@ -228,8 +339,21 @@ s3finder/
 │   ├── ratelimit/         # Adaptive AIMD rate limiter
 │   └── output/            # Real-time + report writers
 ├── internal/config/       # Configuration management
-└── wordlists/             # Default wordlists
+├── wordlists/             # Default wordlists
+├── Makefile               # Build automation
+└── .goreleaser.yaml       # Release automation
 ```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Run tests (`make test`)
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
 ---
 
