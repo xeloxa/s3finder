@@ -2,8 +2,6 @@
   <img src="logo.png" alt="s3finder" width="400">
 </p>
 
-<h1 align="center">s3finder</h1>
-
 **AI-Powered S3 Bucket Enumeration Tool**
 
 A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
