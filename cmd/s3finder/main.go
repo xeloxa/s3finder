@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	version = "1.0.0"
+	version   = "dev"
+	buildTime = "unknown"
 	cfg     = config.Default()
 )
 
@@ -66,7 +67,7 @@ Examples:
 		Use:   "version",
 		Short: "Print version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("s3finder version %s\n", version)
+			fmt.Printf("s3finder version %s (built %s)\n", version, buildTime)
 		},
 	})
 

@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+version: 2
+
+project_name: s3finder
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: s3finder
+    main: ./cmd/s3finder
+    binary: s3finder
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.buildTime={{.Date}}
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - README.md
+      - LICENSE
+      - wordlists/*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: xeloxa
+    name: s3finder
+  draft: false
+  prerelease: auto
+  name_template: "{{.ProjectName}} v{{.Version}}"
+
+brews:
+  - name: s3finder
+    repository:
+      owner: xeloxa
+      name: homebrew-tap
+    homepage: "https://github.com/xeloxa/s3finder"
+    description: "AI-powered S3 bucket enumeration tool"
+    license: "MIT"
+    skip_upload: auto
+    install: |
+      bin.install "s3finder"
+
+nfpms:
+  - id: packages
+    package_name: s3finder
+    vendor: xeloxa
+    homepage: https://github.com/xeloxa/s3finder
+    maintainer: xeloxa
+    description: AI-powered S3 bucket enumeration tool
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    contents:
+      - src: ./wordlists/common.txt
+        dst: /usr/share/s3finder/wordlists/common.txt

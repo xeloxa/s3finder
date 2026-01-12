@@ -1,5 +1,6 @@
 # Binaries
 /s3finder
+/build/
 *.exe
 
 # IDE
@@ -19,3 +20,10 @@ Thumbs.db
 results.json
 results.txt
 *.log
+
+# Coverage
+coverage.out
+coverage.html
+
+# GoReleaser
+/dist/
