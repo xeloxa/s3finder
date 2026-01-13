@@ -2,6 +2,10 @@
   <img src="logo.png" alt="s3finder" width="400">
 </p>
 
+> [!IMPORTANT]
+> **THIS APPLICATION IS CURRENTLY UNDER DEVELOPMENT.**
+> All features are in the testing phase and major changes may occur.
+
 <p align="center">
   <strong>AI-Powered S3 Bucket Enumeration Tool</strong>
 </p>
