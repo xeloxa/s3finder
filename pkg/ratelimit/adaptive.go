@@ -46,11 +46,11 @@ func (a *AdaptiveLimiter) RecordResponse(statusCode int) {
 
 	current := a.currentRPS.Load().(float64)
 
-	if statusCode == 429 || statusCode == 503 {
+	if statusCode == 429 || statusCode == 503 || statusCode == 0 {
 		a.consecutive429++
 		a.successCount = 0
 
-		// Multiplicative decrease: halve RPS after 3 consecutive throttles
+		// Multiplicative decrease: halve RPS after 3 consecutive throttles or errors
 		if a.consecutive429 >= 3 {
 			newRPS := current * 0.5
 			if newRPS < 10 {

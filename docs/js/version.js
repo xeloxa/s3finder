@@ -1,7 +1,7 @@
 // Auto-fetch latest version from GitHub releases
 (function() {
   const REPO = 'xeloxa/s3finder';
-  const FALLBACK_VERSION = 'v1.2.0';
+  const FALLBACK_VERSION = 'v1.2.1';
 
   async function fetchLatestVersion() {
     try {
