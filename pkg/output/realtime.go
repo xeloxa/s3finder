@@ -35,6 +35,7 @@ type RealtimeWriter struct {
 	useColors  bool
 	useLinks   bool
 	verbose    bool
+	progress   *Progress // Reference to progress bar for coordinated output
 
 	// Counters for summary
 	found   int64
@@ -49,6 +50,7 @@ type RealtimeConfig struct {
 	UseColors  bool
 	UseLinks   bool // Enable clickable hyperlinks
 	Verbose    bool
+	Progress   *Progress // Optional progress bar for coordinated output
 }
 
 // NewRealtime creates a new realtime terminal writer.
@@ -72,6 +74,7 @@ func NewRealtime(cfg *RealtimeConfig) *RealtimeWriter {
 		useColors: cfg.UseColors,
 		useLinks:  cfg.UseLinks,
 		verbose:   cfg.Verbose,
+		progress:  cfg.Progress,
 	}
 }
 
@@ -100,7 +103,12 @@ func (r *RealtimeWriter) WriteResult(result *scanner.ScanResult) error {
 	}
 
 	if line != "" {
-		fmt.Fprintln(r.out, line)
+		if r.progress != nil {
+			// Use progress bar's PrintAbove to maintain progress at bottom
+			r.progress.PrintAbove(line)
+		} else {
+			fmt.Fprintln(r.out, line)
+		}
 	}
 
 	return nil

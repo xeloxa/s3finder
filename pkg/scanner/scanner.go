@@ -30,13 +30,15 @@ type Stats struct {
 
 // Scanner orchestrates the bucket enumeration process.
 type Scanner struct {
-	prober       *Prober
-	inspector    *Inspector
-	workers      int
-	deepInspect  bool
-	stats        Stats
-	resultsChan  chan *ScanResult
-	mu           sync.RWMutex
+	prober         *Prober
+	inspector      *Inspector
+	workers        int
+	deepInspect    bool
+	stats          Stats
+	resultsChan    chan *ScanResult
+	inspectChan    chan *ScanResult
+	inspectWg      sync.WaitGroup
+	mu             sync.RWMutex
 }
 
 // Config holds scanner configuration.
@@ -77,6 +79,7 @@ func New(cfg *Config) *Scanner {
 		workers:     cfg.Workers,
 		deepInspect: cfg.DeepInspect,
 		resultsChan: make(chan *ScanResult, 1000),
+		inspectChan: make(chan *ScanResult, 500),
 	}
 }
 
@@ -102,6 +105,15 @@ func (s *Scanner) Scan(ctx context.Context, names []string) <-chan *ScanResult {
 		}
 	}()
 
+	// Start inspection workers (separate pool for non-blocking deep inspection)
+	if s.deepInspect {
+		inspectWorkers := 10 // Dedicated inspection workers
+		for i := 0; i < inspectWorkers; i++ {
+			s.inspectWg.Add(1)
+			go s.inspectionWorker(ctx)
+		}
+	}
+
 	// Consumer: worker pool
 	var wg sync.WaitGroup
 	for i := 0; i < s.workers; i++ {
@@ -115,10 +127,33 @@ func (s *Scanner) Scan(ctx context.Context, names []string) <-chan *ScanResult {
 	// Close results channel when all workers are done
 	go func() {
 		wg.Wait()
+		// Close inspect channel and wait for inspectors
+		close(s.inspectChan)
+		s.inspectWg.Wait()
 		close(s.resultsChan)
 	}()
 
 	return s.resultsChan
+}
+
+// inspectionWorker performs deep inspection on found buckets.
+func (s *Scanner) inspectionWorker(ctx context.Context) {
+	defer s.inspectWg.Done()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case result, ok := <-s.inspectChan:
+			if !ok {
+				return
+			}
+			result.Inspect = s.inspector.Inspect(ctx, result.Bucket)
+			select {
+			case <-ctx.Done():
+			case s.resultsChan <- result:
+			}
+		}
+	}
 }
 
 // worker processes bucket names from the channel.
@@ -136,7 +171,7 @@ func (s *Scanner) worker(ctx context.Context, names <-chan string) {
 	}
 }
 
-// processBucket probes a single bucket and optionally inspects it.
+// processBucket probes a single bucket and optionally queues for inspection.
 func (s *Scanner) processBucket(ctx context.Context, bucket string) {
 	atomic.AddInt64(&s.stats.Scanned, 1)
 
@@ -161,13 +196,25 @@ func (s *Scanner) processBucket(ctx context.Context, bucket string) {
 		atomic.AddInt64(&s.stats.Found, 1)
 		atomic.AddInt64(&s.stats.Public, 1)
 		if s.deepInspect {
-			result.Inspect = s.inspector.Inspect(ctx, bucket)
+			// Queue for async inspection
+			select {
+			case <-ctx.Done():
+				return
+			case s.inspectChan <- result:
+				return // Will be sent to resultsChan by inspectionWorker
+			}
 		}
 	case BucketForbidden:
 		atomic.AddInt64(&s.stats.Found, 1)
 		atomic.AddInt64(&s.stats.Private, 1)
 		if s.deepInspect {
-			result.Inspect = s.inspector.Inspect(ctx, bucket)
+			// Queue for async inspection
+			select {
+			case <-ctx.Done():
+				return
+			case s.inspectChan <- result:
+				return // Will be sent to resultsChan by inspectionWorker
+			}
 		}
 	case BucketError:
 		atomic.AddInt64(&s.stats.Errors, 1)

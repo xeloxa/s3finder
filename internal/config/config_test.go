@@ -14,9 +14,9 @@ func TestDefault(t *testing.T) {
 		got      interface{}
 		expected interface{}
 	}{
-		{"Workers", cfg.Workers, 10},
-		{"MaxRPS", cfg.MaxRPS, 50.0},
-		{"Timeout", cfg.Timeout, 30},
+		{"Workers", cfg.Workers, 50},
+		{"MaxRPS", cfg.MaxRPS, 150.0},
+		{"Timeout", cfg.Timeout, 15},
 		{"DeepInspect", cfg.DeepInspect, true},
 		{"Wordlist", cfg.Wordlist, ""},
 		{"CTLimit", cfg.CTLimit, 100},

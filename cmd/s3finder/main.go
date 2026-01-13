@@ -120,12 +120,23 @@ func run(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("Generated %d unique bucket names to scan\n\n", len(names))
 
-	// Setup output writers
+	// Setup progress bar
+	progress := output.NewProgress(&output.ProgressConfig{
+		Output:      os.Stderr,
+		Total:       int64(len(names)),
+		RefreshRate: 100 * time.Millisecond,
+		ShowRPS:     true,
+		UseColors:   !cfg.NoColor,
+		BarWidth:    25,
+	})
+
+	// Setup output writers (pass progress for coordinated output)
 	realtimeWriter := output.NewRealtime(&output.RealtimeConfig{
 		Output:    os.Stdout,
 		UseColors: !cfg.NoColor,
 		UseLinks:  !cfg.NoColor, // Enable clickable links when colors are enabled
 		Verbose:   cfg.Verbose,
+		Progress:  progress, // Coordinate output with progress bar
 	})
 
 	reportWriter, err := output.NewReport(&output.ReportConfig{
@@ -152,12 +163,31 @@ func run(cmd *cobra.Command, args []string) error {
 	startTime := time.Now()
 	results := s.Scan(ctx, names)
 
+	// Start progress display with stats provider
+	go func() {
+		ticker := time.NewTicker(50 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				stats := s.Stats()
+				progress.Update(stats.Scanned, stats.Found, stats.Public, stats.Private, stats.Errors, s.CurrentRPS())
+			}
+		}
+	}()
+	progress.Start()
+
 	// Process results
 	for result := range results {
 		if err := multiWriter.WriteResult(result); err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing result: %v\n", err)
 		}
 	}
+
+	// Stop progress display
+	progress.Stop()
 
 	// Print summary
 	stats := s.Stats()

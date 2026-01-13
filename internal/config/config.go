@@ -37,9 +37,9 @@ type Config struct {
 // Default returns the default configuration.
 func Default() *Config {
 	return &Config{
-		Workers:      10,
-		MaxRPS:       50,
-		Timeout:      30,
+		Workers:      50,
+		MaxRPS:       150,
+		Timeout:      15,
 		DeepInspect:  true,
 		Wordlist:     "",
 		CTLimit:      100,

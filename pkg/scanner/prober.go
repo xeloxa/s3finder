@@ -83,10 +83,11 @@ func NewProber(cfg *ProberConfig) *Prober {
 		MaxIdleConns:          cfg.MaxIdleConns,
 		MaxIdleConnsPerHost:   cfg.MaxIdleConnsPerHost,
 		MaxConnsPerHost:       cfg.MaxConnsPerHost,
-		IdleConnTimeout:       30 * time.Second,
-		DisableKeepAlives:     true,
-		TLSHandshakeTimeout:   4 * time.Second,
+		IdleConnTimeout:       90 * time.Second,
+		DisableKeepAlives:     false, // Keep-alives are essential for performance
+		TLSHandshakeTimeout:   5 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
+		ForceAttemptHTTP2:     true,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
 		},
