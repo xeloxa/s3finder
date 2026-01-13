@@ -165,8 +165,8 @@ func run(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("\n%s\n", "────────────────────────────────────────")
 	fmt.Printf("Scan completed in %s\n", duration)
-	fmt.Printf("Scanned: %d | Found: %d | Public: %d | Private: %d | Errors: %d\n",
-		stats.Scanned, stats.Found, stats.Public, stats.Private, stats.Errors)
+	fmt.Printf("Scanned: %d | Found: %d | Public: %d | Private: %d | Errors: %d | Not Found: %d\n",
+		stats.Scanned, stats.Found, stats.Public, stats.Private, stats.Errors, stats.NotFound)
 	fmt.Printf("Results saved to: %s\n", cfg.OutputFile)
 
 	return nil

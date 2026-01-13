@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/xeloxa/s3finder/pkg/dns"
 	"github.com/xeloxa/s3finder/pkg/ratelimit"
 )
 
@@ -62,9 +63,9 @@ type ProberConfig struct {
 func DefaultProberConfig() *ProberConfig {
 	return &ProberConfig{
 		Timeout:             10 * time.Second,
-		MaxIdleConns:        1000,
-		MaxIdleConnsPerHost: 100,
-		MaxConnsPerHost:     100,
+		MaxIdleConns:        2000,
+		MaxIdleConnsPerHost: 200,
+		MaxConnsPerHost:     0,
 		MaxRPS:              500,
 	}
 }
@@ -75,13 +76,17 @@ func NewProber(cfg *ProberConfig) *Prober {
 		cfg = DefaultProberConfig()
 	}
 
+	dnsResolver := dns.NewResolver()
+
 	transport := &http.Transport{
-		MaxIdleConns:        cfg.MaxIdleConns,
-		MaxIdleConnsPerHost: cfg.MaxIdleConnsPerHost,
-		MaxConnsPerHost:     cfg.MaxConnsPerHost,
-		IdleConnTimeout:     30 * time.Second,
-		DisableKeepAlives:   true,
-		TLSHandshakeTimeout: 5 * time.Second,
+		DialContext:           dnsResolver.DialContext,
+		MaxIdleConns:          cfg.MaxIdleConns,
+		MaxIdleConnsPerHost:   cfg.MaxIdleConnsPerHost,
+		MaxConnsPerHost:       cfg.MaxConnsPerHost,
+		IdleConnTimeout:       30 * time.Second,
+		DisableKeepAlives:     false,
+		TLSHandshakeTimeout:   4 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Second,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
 		},
@@ -104,48 +109,63 @@ func NewProber(cfg *ProberConfig) *Prober {
 // Check probes a bucket name and returns the result.
 func (p *Prober) Check(ctx context.Context, bucket string) *ProbeResponse {
 	resp := &ProbeResponse{Bucket: bucket}
+	maxRetries := 2
 
-	// Wait for rate limiter
-	if err := p.limiter.Wait(ctx); err != nil {
-		resp.Result = BucketError
-		resp.Error = err
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		// Wait for rate limiter
+		if err := p.limiter.Wait(ctx); err != nil {
+			resp.Result = BucketError
+			resp.Error = err
+			return resp
+		}
+
+		url := fmt.Sprintf("https://%s.s3.amazonaws.com", bucket)
+
+		req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+		if err != nil {
+			resp.Result = BucketError
+			resp.Error = err
+			return resp
+		}
+
+		httpResp, err := p.client.Do(req)
+		if err != nil {
+			if attempt < maxRetries {
+				continue
+			}
+			resp.Result = BucketError
+			resp.Error = err
+			p.limiter.RecordResponse(0)
+			return resp
+		}
+
+		// Check for 5xx errors which should be retried
+		if httpResp.StatusCode >= 500 && attempt < maxRetries {
+			p.limiter.RecordResponse(httpResp.StatusCode)
+			httpResp.Body.Close()
+			continue
+		}
+
+		resp.StatusCode = httpResp.StatusCode
+		p.limiter.RecordResponse(httpResp.StatusCode)
+
+		switch httpResp.StatusCode {
+		case 200:
+			resp.Result = BucketExists
+		case 403:
+			resp.Result = BucketForbidden
+		case 404:
+			resp.Result = BucketNotFound
+		case 301, 307:
+			// Redirect typically means bucket exists in different region
+			resp.Result = BucketForbidden
+		default:
+			resp.Result = BucketError
+			resp.Error = fmt.Errorf("unexpected status code: %d", httpResp.StatusCode)
+		}
+
+		httpResp.Body.Close()
 		return resp
-	}
-
-	url := fmt.Sprintf("https://%s.s3.amazonaws.com", bucket)
-
-	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
-	if err != nil {
-		resp.Result = BucketError
-		resp.Error = err
-		return resp
-	}
-
-	httpResp, err := p.client.Do(req)
-	if err != nil {
-		resp.Result = BucketError
-		resp.Error = err
-		p.limiter.RecordResponse(0)
-		return resp
-	}
-	defer httpResp.Body.Close()
-
-	resp.StatusCode = httpResp.StatusCode
-	p.limiter.RecordResponse(httpResp.StatusCode)
-
-	switch httpResp.StatusCode {
-	case 200:
-		resp.Result = BucketExists
-	case 403:
-		resp.Result = BucketForbidden
-	case 404:
-		resp.Result = BucketNotFound
-	case 301, 307:
-		// Redirect typically means bucket exists in different region
-		resp.Result = BucketForbidden
-	default:
-		resp.Result = BucketError
-		resp.Error = fmt.Errorf("unexpected status code: %d", httpResp.StatusCode)
 	}
 
 	return resp

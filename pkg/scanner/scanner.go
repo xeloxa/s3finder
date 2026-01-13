@@ -23,6 +23,7 @@ type Stats struct {
 	Public    int64
 	Private   int64
 	Errors    int64
+	NotFound  int64
 	StartTime time.Time
 }
 
@@ -148,6 +149,7 @@ func (s *Scanner) processBucket(ctx context.Context, bucket string) {
 
 	switch probe.Result {
 	case BucketNotFound:
+		atomic.AddInt64(&s.stats.NotFound, 1)
 		// Don't send not-found results
 		return
 	case BucketExists:
@@ -188,6 +190,7 @@ func (s *Scanner) Stats() Stats {
 		Public:    atomic.LoadInt64(&s.stats.Public),
 		Private:   atomic.LoadInt64(&s.stats.Private),
 		Errors:    atomic.LoadInt64(&s.stats.Errors),
+		NotFound:  atomic.LoadInt64(&s.stats.NotFound),
 		StartTime: s.stats.StartTime,
 	}
 }

@@ -35,14 +35,14 @@ func TestDefaultProberConfig(t *testing.T) {
 	if cfg.Timeout != 10*time.Second {
 		t.Errorf("Timeout = %v, want %v", cfg.Timeout, 10*time.Second)
 	}
-	if cfg.MaxIdleConns != 1000 {
-		t.Errorf("MaxIdleConns = %d, want %d", cfg.MaxIdleConns, 1000)
+	if cfg.MaxIdleConns != 2000 {
+		t.Errorf("MaxIdleConns = %d, want %d", cfg.MaxIdleConns, 2000)
 	}
-	if cfg.MaxIdleConnsPerHost != 100 {
-		t.Errorf("MaxIdleConnsPerHost = %d, want %d", cfg.MaxIdleConnsPerHost, 100)
+	if cfg.MaxIdleConnsPerHost != 200 {
+		t.Errorf("MaxIdleConnsPerHost = %d, want %d", cfg.MaxIdleConnsPerHost, 200)
 	}
-	if cfg.MaxConnsPerHost != 100 {
-		t.Errorf("MaxConnsPerHost = %d, want %d", cfg.MaxConnsPerHost, 100)
+	if cfg.MaxConnsPerHost != 0 {
+		t.Errorf("MaxConnsPerHost = %d, want %d", cfg.MaxConnsPerHost, 0)
 	}
 	if cfg.MaxRPS != 500 {
 		t.Errorf("MaxRPS = %v, want %v", cfg.MaxRPS, 500.0)
