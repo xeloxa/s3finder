@@ -123,6 +123,18 @@ Results saved to: results.json</code></pre>
 
         <p>The included wordlist has 130 common bucket name patterns.</p>
 
+        <h2>Using CT Log Discovery</h2>
+        <p>If you know the target's domain, use Certificate Transparency logs to discover real subdomains:</p>
+
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code># Discover subdomains and generate targeted bucket names
+s3finder -s target -d target.com</code></pre>
+
+        <p>This queries crt.sh for subdomains like <code>dev.target.com</code>, <code>staging.target.com</code>, which become bucket name seeds.</p>
+
         <h2>Enabling AI Generation</h2>
         <p>For smarter bucket name suggestions:</p>
 

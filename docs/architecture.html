@@ -63,13 +63,19 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
-│  │   Wordlist   │    │  AI Generator │    │  Permutation │       │
-│  │    Loader    │───▶│   (optional)  │───▶│    Engine    │       │
-│  └──────────────┘    └──────────────┘    └──────────────┘       │
-│         │                   │                    │               │
-│         └───────────────────┴────────────────────┘               │
+│  │   CT Logs    │    │   Wordlist   │    │  AI Generator │       │
+│  │   (crt.sh)   │    │    Loader    │    │   (optional)  │       │
+│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘       │
+│         │                   │                   │                │
+│         └───────────────────┴───────────────────┘                │
 │                             │                                    │
 │                             ▼                                    │
+│                   ┌──────────────────┐                          │
+│                   │   Permutation    │                          │
+│                   │     Engine       │                          │
+│                   └────────┬─────────┘                          │
+│                            │                                     │
+│                            ▼                                     │
 │                   ┌──────────────────┐                          │
 │                   │   names channel   │  (buffered, size=1000)   │
 │                   └────────┬─────────┘                          │
@@ -110,7 +116,10 @@
 │   │   ├── generator.go   # Provider interface
 │   │   ├── openai.go      # OpenAI implementation
 │   │   ├── ollama.go      # Ollama implementation
-│   │   └── anthropic.go   # Anthropic implementation
+│   │   ├── anthropic.go   # Anthropic implementation
+│   │   └── gemini.go      # Gemini implementation
+│   ├── recon/             # Reconnaissance modules
+│   │   └── ctlogs.go      # CT log subdomain discovery (crt.sh)
 │   ├── permutation/       # Name generation
 │   │   └── engine.go      # Suffix/prefix/year patterns
 │   ├── ratelimit/         # Rate limiting
@@ -154,6 +163,11 @@
             <code>pkg/permutation/engine.go</code>
           </div>
           <div class="component-item">
+            <h4>CT Log Client</h4>
+            <p>Queries crt.sh to discover subdomains via Certificate Transparency logs.</p>
+            <code>pkg/recon/ctlogs.go</code>
+          </div>
+          <div class="component-item">
             <h4>AI Generator</h4>
             <p>Provider-agnostic interface for LLM-powered name generation.</p>
             <code>pkg/ai/generator.go</code>
@@ -162,7 +176,8 @@
 
         <h2>Data Flow</h2>
         <ol>
-          <li><strong>Name Generation:</strong> Wordlist + Permutation Engine + AI (optional) produce unique bucket names</li>
+          <li><strong>CT Log Discovery (optional):</strong> Query crt.sh for subdomains of target domain</li>
+          <li><strong>Name Generation:</strong> Wordlist + CT seeds + Permutation Engine + AI (optional) produce unique bucket names</li>
           <li><strong>Channel Feed:</strong> Names are fed into a buffered channel (backpressure-safe)</li>
           <li><strong>Worker Pool:</strong> N workers read from channel, each with its own HTTP client</li>
           <li><strong>Probing:</strong> HTTP HEAD request to <code>https://{bucket}.s3.amazonaws.com</code></li>

@@ -92,6 +92,19 @@ s3finder -s acme -w wordlists/common.txt
 # Use custom wordlist
 s3finder -s acme -w /path/to/custom-wordlist.txt</code></pre>
 
+        <h3>CT Log Subdomain Discovery</h3>
+        <p>Use Certificate Transparency logs to discover real subdomains and generate targeted bucket names:</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Fetch subdomains from CT logs
+s3finder -s acme -d acme.com
+
+# Combine CT logs with AI for maximum coverage
+s3finder -s acme -d acme.com --ai
+
+# Limit CT results (default: 100)
+s3finder -s acme -d acme.com --ct-limit 50</code></pre>
+        <p>CT logs query crt.sh to find subdomains like <code>dev.acme.com</code>, <code>staging.acme.com</code>, which are then converted to potential bucket names like <code>dev-acme</code>, <code>staging-acme</code>.</p>
+
         <h2>Performance Options</h2>
         <table>
           <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>

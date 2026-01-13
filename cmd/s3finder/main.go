@@ -13,6 +13,7 @@ import (
 	"github.com/xeloxa/s3finder/pkg/ai"
 	"github.com/xeloxa/s3finder/pkg/output"
 	"github.com/xeloxa/s3finder/pkg/permutation"
+	"github.com/xeloxa/s3finder/pkg/recon"
 	"github.com/xeloxa/s3finder/pkg/scanner"
 )
 
@@ -45,6 +46,8 @@ Examples:
 	// Input flags
 	rootCmd.Flags().StringVarP(&cfg.Seed, "seed", "s", "", "Target keyword for bucket name generation (required)")
 	rootCmd.Flags().StringVarP(&cfg.Wordlist, "wordlist", "w", "", "Path to wordlist file")
+	rootCmd.Flags().StringVarP(&cfg.Domain, "domain", "d", "", "Target domain for CT log subdomain discovery")
+	rootCmd.Flags().IntVar(&cfg.CTLimit, "ct-limit", cfg.CTLimit, "Maximum subdomains to fetch from CT logs")
 
 	// AI flags
 	rootCmd.Flags().BoolVar(&cfg.AIEnabled, "ai", cfg.AIEnabled, "Enable AI-powered name generation")
@@ -172,6 +175,7 @@ func run(cmd *cobra.Command, args []string) error {
 func generateNames(ctx context.Context) ([]string, error) {
 	seen := make(map[string]struct{})
 	var allNames []string
+	var additionalSeeds []string
 
 	add := func(names []string) {
 		for _, name := range names {
@@ -182,11 +186,34 @@ func generateNames(ctx context.Context) ([]string, error) {
 		}
 	}
 
+	// 0. CT Log subdomain discovery (if domain provided)
+	if cfg.Domain != "" {
+		fmt.Printf("Fetching subdomains from CT logs for %s...\n", cfg.Domain)
+		ctClient := recon.NewCTClient(30*time.Second, cfg.CTLimit)
+		subdomains, err := ctClient.FetchSubdomains(ctx, cfg.Domain)
+		if err != nil {
+			fmt.Printf("Warning: CT log fetch failed: %v\n", err)
+		} else {
+			seeds := recon.SubdomainsToSeeds(subdomains, cfg.Domain)
+			additionalSeeds = seeds
+			fmt.Printf("CT logs found %d subdomains, generated %d seeds\n", len(subdomains), len(seeds))
+		}
+	}
+
 	// 1. Permutation engine on seed
 	engine := permutation.Default()
 	permNames := engine.Generate(cfg.Seed)
 	add(permNames)
 	fmt.Printf("Permutation engine generated %d names\n", len(permNames))
+
+	// 1b. Permutations on CT-derived seeds
+	for _, seed := range additionalSeeds {
+		ctPermNames := engine.Generate(seed)
+		add(ctPermNames)
+	}
+	if len(additionalSeeds) > 0 {
+		fmt.Printf("CT seeds expanded to %d additional names\n", len(allNames)-len(permNames))
+	}
 
 	// 2. Wordlist + permutations
 	if cfg.Wordlist != "" {

@@ -31,6 +31,7 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 ## Features
 
 - **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
+- **CT Log Reconnaissance** — Discover subdomains via Certificate Transparency logs (crt.sh)
 - **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate smart bucket name variations
 - **Permutation Engine** — 780+ automatic variations per seed (suffixes, prefixes, years, regions)
 - **Adaptive Rate Limiting** — AIMD algorithm auto-adjusts to avoid throttling and IP blocks
@@ -100,6 +101,9 @@ go build -o s3finder ./cmd/s3finder
 # Basic scan with permutations
 s3finder -s acme-corp
 
+# With domain for CT log subdomain discovery
+s3finder -s acme -d acme.com
+
 # With wordlist
 s3finder -s acme-corp -w wordlists/common.txt
 
@@ -127,6 +131,19 @@ s3finder -s acme-corp
 ```bash
 # Combine wordlist with seed-based permutations
 s3finder -s acme-corp -w wordlists/common.txt
+```
+
+### With CT Log Subdomain Discovery
+
+```bash
+# Fetch subdomains from Certificate Transparency logs
+s3finder -s acme -d acme.com
+
+# Combine CT logs with AI for maximum coverage
+s3finder -s acme -d acme.com --ai
+
+# Limit CT results (default: 100)
+s3finder -s acme -d acme.com --ct-limit 50
 ```
 
 ### AI-Powered Scanning
@@ -178,6 +195,8 @@ s3finder -s acme-corp --no-color
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--seed` | `-s` | *required* | Target keyword for bucket name generation |
+| `--domain` | `-d` | | Target domain for CT log subdomain discovery |
+| `--ct-limit` | | `100` | Maximum subdomains to fetch from CT logs |
 | `--wordlist` | `-w` | | Path to wordlist file |
 | `--threads` | `-t` | `100` | Number of concurrent workers |
 | `--rps` | | `500` | Maximum requests per second |
@@ -360,7 +379,8 @@ s3finder/
 ├── cmd/s3finder/          # CLI entrypoint
 ├── pkg/
 │   ├── scanner/           # Worker pool, prober, inspector
-│   ├── ai/                # LLM providers (OpenAI, Ollama, Anthropic)
+│   ├── ai/                # LLM providers (OpenAI, Ollama, Anthropic, Gemini)
+│   ├── recon/             # CT log reconnaissance (crt.sh)
 │   ├── permutation/       # Name generation engine
 │   ├── ratelimit/         # Adaptive AIMD rate limiter
 │   └── output/            # Real-time + report writers

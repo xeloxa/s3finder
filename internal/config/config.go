@@ -16,6 +16,8 @@ type Config struct {
 	// Input settings
 	Seed     string `mapstructure:"seed"`
 	Wordlist string `mapstructure:"wordlist"`
+	Domain   string `mapstructure:"domain"`
+	CTLimit  int    `mapstructure:"ct_limit"`
 
 	// AI settings
 	AIEnabled  bool   `mapstructure:"ai_enabled"`
@@ -40,6 +42,7 @@ func Default() *Config {
 		Timeout:      30,
 		DeepInspect:  true,
 		Wordlist:     "",
+		CTLimit:      100,
 		AIEnabled:    false,
 		AIProvider:   "openai",
 		AIModel:      "gpt-4o-mini",

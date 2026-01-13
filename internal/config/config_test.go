@@ -16,9 +16,10 @@ func TestDefault(t *testing.T) {
 	}{
 		{"Workers", cfg.Workers, 100},
 		{"MaxRPS", cfg.MaxRPS, 500.0},
-		{"Timeout", cfg.Timeout, 10},
+		{"Timeout", cfg.Timeout, 30},
 		{"DeepInspect", cfg.DeepInspect, true},
 		{"Wordlist", cfg.Wordlist, ""},
+		{"CTLimit", cfg.CTLimit, 100},
 		{"AIEnabled", cfg.AIEnabled, false},
 		{"AIProvider", cfg.AIProvider, "openai"},
 		{"AIModel", cfg.AIModel, "gpt-4o-mini"},
