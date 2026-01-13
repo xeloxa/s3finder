@@ -184,7 +184,11 @@ func (r *RealtimeWriter) formatError(result *scanner.ScanResult) string {
 	if r.useColors {
 		tag = colorRed + tag + colorReset
 	}
-	return fmt.Sprintf("%s %s", tag, result.Bucket)
+	msg := result.Bucket
+	if r.verbose && result.Error != "" {
+		msg = fmt.Sprintf("%s (%s)", result.Bucket, result.Error)
+	}
+	return fmt.Sprintf("%s %s", tag, msg)
 }
 
 // Flush implements Writer.

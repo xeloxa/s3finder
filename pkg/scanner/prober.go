@@ -84,7 +84,7 @@ func NewProber(cfg *ProberConfig) *Prober {
 		MaxIdleConnsPerHost:   cfg.MaxIdleConnsPerHost,
 		MaxConnsPerHost:       cfg.MaxConnsPerHost,
 		IdleConnTimeout:       30 * time.Second,
-		DisableKeepAlives:     false,
+		DisableKeepAlives:     true,
 		TLSHandshakeTimeout:   4 * time.Second,
 		ResponseHeaderTimeout: 5 * time.Second,
 		TLSClientConfig: &tls.Config{
@@ -131,10 +131,11 @@ func (p *Prober) Check(ctx context.Context, bucket string) *ProbeResponse {
 		httpResp, err := p.client.Do(req)
 		if err != nil {
 			if attempt < maxRetries {
+				time.Sleep(time.Duration(attempt+1) * 200 * time.Millisecond)
 				continue
 			}
 			resp.Result = BucketError
-			resp.Error = err
+			resp.Error = fmt.Errorf("network error: %w", err)
 			p.limiter.RecordResponse(0)
 			return resp
 		}

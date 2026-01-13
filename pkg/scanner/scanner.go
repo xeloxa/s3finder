@@ -12,6 +12,7 @@ type ScanResult struct {
 	Bucket    string         `json:"bucket"`
 	Probe     ProbeResult    `json:"probe_result"`
 	Inspect   *InspectResult `json:"inspect,omitempty"`
+	Error     string         `json:"error,omitempty"`
 	Timestamp time.Time      `json:"timestamp"`
 }
 
@@ -49,8 +50,8 @@ type Config struct {
 // DefaultConfig returns sensible default configuration.
 func DefaultConfig() *Config {
 	return &Config{
-		Workers:     100,
-		MaxRPS:      500,
+		Workers:     10,
+		MaxRPS:      50,
 		Timeout:     10 * time.Second,
 		DeepInspect: true,
 	}
@@ -145,6 +146,10 @@ func (s *Scanner) processBucket(ctx context.Context, bucket string) {
 		Bucket:    bucket,
 		Probe:     probe.Result,
 		Timestamp: time.Now(),
+	}
+
+	if probe.Error != nil {
+		result.Error = probe.Error.Error()
 	}
 
 	switch probe.Result {

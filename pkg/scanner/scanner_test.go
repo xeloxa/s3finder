@@ -9,11 +9,11 @@ import (
 func TestDefaultConfig(t *testing.T) {
 	cfg := DefaultConfig()
 
-	if cfg.Workers != 100 {
-		t.Errorf("Workers = %d, want %d", cfg.Workers, 100)
+	if cfg.Workers != 10 {
+		t.Errorf("Workers = %d, want %d", cfg.Workers, 10)
 	}
-	if cfg.MaxRPS != 500 {
-		t.Errorf("MaxRPS = %v, want %v", cfg.MaxRPS, 500.0)
+	if cfg.MaxRPS != 50 {
+		t.Errorf("MaxRPS = %v, want %v", cfg.MaxRPS, 50.0)
 	}
 	if cfg.Timeout != 10*time.Second {
 		t.Errorf("Timeout = %v, want %v", cfg.Timeout, 10*time.Second)
@@ -35,8 +35,8 @@ func TestNew_NilConfig(t *testing.T) {
 	if scanner.inspector == nil {
 		t.Error("Scanner.inspector should not be nil")
 	}
-	if scanner.workers != 100 {
-		t.Errorf("workers = %d, want %d (default)", scanner.workers, 100)
+	if scanner.workers != 10 {
+		t.Errorf("workers = %d, want %d (default)", scanner.workers, 10)
 	}
 }
 

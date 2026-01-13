@@ -46,7 +46,8 @@ func (r *Resolver) DialContext(ctx context.Context, network, addr string) (net.C
 	// 1. Resolve IP (using our custom resolver)
 	ips, err := r.internal.LookupHost(ctx, host)
 	if err != nil {
-		return nil, err
+		// If DNS lookup fails, it might be due to network saturation or NXDOMAIN
+		return nil, fmt.Errorf("dns lookup failed for %s: %w", host, err)
 	}
 
 	// 2. Dial IP (try all resolved IPs)

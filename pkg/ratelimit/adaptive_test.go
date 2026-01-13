@@ -138,9 +138,9 @@ func TestRecordResponse_ThrottleFloor(t *testing.T) {
 		limiter.RecordResponse(429)
 	}
 
-	// Should not go below 10 RPS
-	if limiter.CurrentRPS() < 10 {
-		t.Errorf("CurrentRPS() = %v, should not go below 10", limiter.CurrentRPS())
+	// Should not go below 5 RPS
+	if limiter.CurrentRPS() < 5 {
+		t.Errorf("CurrentRPS() = %v, should not go below 5", limiter.CurrentRPS())
 	}
 }
 

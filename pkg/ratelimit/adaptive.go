@@ -50,11 +50,18 @@ func (a *AdaptiveLimiter) RecordResponse(statusCode int) {
 		a.consecutive429++
 		a.successCount = 0
 
-		// Multiplicative decrease: halve RPS after 3 consecutive throttles or errors
-		if a.consecutive429 >= 3 {
-			newRPS := current * 0.5
-			if newRPS < 10 {
-				newRPS = 10 // floor at 10 RPS
+		// If it's a network error (0), decrease immediately and more aggressively
+		decreaseFactor := 0.5
+		threshold := 3
+		if statusCode == 0 {
+			decreaseFactor = 0.3
+			threshold = 1 // React immediately to network failures
+		}
+
+		if int(a.consecutive429) >= threshold {
+			newRPS := current * decreaseFactor
+			if newRPS < 5 {
+				newRPS = 5 // floor at 5 RPS
 			}
 			a.currentRPS.Store(newRPS)
 			a.limiter.SetLimit(rate.Limit(newRPS))
