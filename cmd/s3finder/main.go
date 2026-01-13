@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -20,7 +21,8 @@ import (
 var (
 	version   = "dev"
 	buildTime = "unknown"
-	cfg     = config.Default()
+	cfg       = config.Default()
+	outputMu  sync.Mutex // Global mutex for synchronized output
 )
 
 func main() {
@@ -37,14 +39,14 @@ Examples:
 		RunE: run,
 	}
 
-	// Scanner flags
+	// ... flags ...
 	rootCmd.Flags().IntVarP(&cfg.Workers, "threads", "t", cfg.Workers, "Number of concurrent workers")
 	rootCmd.Flags().Float64Var(&cfg.MaxRPS, "rps", cfg.MaxRPS, "Maximum requests per second")
 	rootCmd.Flags().IntVar(&cfg.Timeout, "timeout", cfg.Timeout, "Request timeout in seconds")
 	rootCmd.Flags().BoolVar(&cfg.DeepInspect, "deep", cfg.DeepInspect, "Perform deep inspection on found buckets")
 
 	// Input flags
-	rootCmd.Flags().StringVarP(&cfg.Seed, "seed", "s", "", "Target keyword for bucket name generation (required)")
+	rootCmd.Flags().StringVarP(&cfg.Seed, "seed", "s", "", "Target keyword for bucket name generation")
 	rootCmd.Flags().StringVarP(&cfg.Wordlist, "wordlist", "w", "", "Path to wordlist file")
 	rootCmd.Flags().StringVarP(&cfg.Domain, "domain", "d", "", "Target domain for CT log subdomain discovery")
 	rootCmd.Flags().IntVar(&cfg.CTLimit, "ct-limit", cfg.CTLimit, "Maximum subdomains to fetch from CT logs")
@@ -63,8 +65,6 @@ Examples:
 	rootCmd.Flags().BoolVar(&cfg.NoColor, "no-color", cfg.NoColor, "Disable colored output")
 	rootCmd.Flags().BoolVarP(&cfg.Verbose, "verbose", "v", cfg.Verbose, "Verbose output")
 
-	rootCmd.MarkFlagRequired("seed")
-
 	// Version command
 	rootCmd.AddCommand(&cobra.Command{
 		Use:   "version",
@@ -80,6 +80,11 @@ Examples:
 }
 
 func run(cmd *cobra.Command, args []string) error {
+	// Validate input sources
+	if cfg.Seed == "" && cfg.Wordlist == "" && cfg.Domain == "" && !cfg.AIEnabled {
+		return fmt.Errorf("at least one input source is required: --seed, --wordlist, --domain, or --ai")
+	}
+
 	// Setup context with cancellation
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -105,7 +110,7 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Banner
+	// Banner (Static)
 	printBanner()
 
 	// Generate bucket names
@@ -128,6 +133,7 @@ func run(cmd *cobra.Command, args []string) error {
 		ShowRPS:     true,
 		UseColors:   !cfg.NoColor,
 		BarWidth:    25,
+		ExternalMu:  &outputMu,
 	})
 
 	// Setup output writers (pass progress for coordinated output)
@@ -205,7 +211,6 @@ func run(cmd *cobra.Command, args []string) error {
 func generateNames(ctx context.Context) ([]string, error) {
 	seen := make(map[string]struct{})
 	var allNames []string
-	var additionalSeeds []string
 
 	add := func(names []string) {
 		for _, name := range names {
@@ -216,7 +221,9 @@ func generateNames(ctx context.Context) ([]string, error) {
 		}
 	}
 
-	// 0. CT Log subdomain discovery (if domain provided)
+	engine := permutation.Default()
+
+	// 1. CT Log subdomain discovery (if domain provided)
 	if cfg.Domain != "" {
 		fmt.Printf("Fetching subdomains from CT logs for %s...\n", cfg.Domain)
 		ctClient := recon.NewCTClient(30*time.Second, cfg.CTLimit)
@@ -224,60 +231,54 @@ func generateNames(ctx context.Context) ([]string, error) {
 		if err != nil {
 			fmt.Printf("Warning: CT log fetch failed: %v\n", err)
 		} else {
-			seeds := recon.SubdomainsToSeeds(subdomains, cfg.Domain)
-			additionalSeeds = seeds
-			fmt.Printf("CT logs found %d subdomains, generated %d seeds\n", len(subdomains), len(seeds))
+			add(subdomains)
+			fmt.Printf("CT logs found %d subdomains\n", len(subdomains))
 		}
 	}
 
-	// 1. Permutation engine on seed
-	engine := permutation.Default()
-	permNames := engine.Generate(cfg.Seed)
-	add(permNames)
-	fmt.Printf("Permutation engine generated %d names\n", len(permNames))
-
-	// 1b. Permutations on CT-derived seeds
-	for _, seed := range additionalSeeds {
-		ctPermNames := engine.Generate(seed)
-		add(ctPermNames)
-	}
-	if len(additionalSeeds) > 0 {
-		fmt.Printf("CT seeds expanded to %d additional names\n", len(allNames)-len(permNames))
+	// 2. Permutation engine on seed
+	if cfg.Seed != "" {
+		permNames := engine.Generate(cfg.Seed)
+		add(permNames)
+		fmt.Printf("Permutation engine generated %d names from seed: %s\n", len(permNames), cfg.Seed)
 	}
 
-	// 2. Wordlist + permutations
+	// 3. Wordlist (Raw)
 	if cfg.Wordlist != "" {
 		words, err := config.LoadWordlist(cfg.Wordlist)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load wordlist: %w", err)
 		}
-		wordlistNames := engine.GenerateFromWordlist(words, cfg.Seed)
-		add(wordlistNames)
-		fmt.Printf("Wordlist generated %d names\n", len(wordlistNames))
+		add(words)
+		fmt.Printf("Wordlist loaded %d names\n", len(words))
 	}
 
-	// 3. AI generation
+	// 4. AI generation
 	if cfg.AIEnabled {
-		fmt.Printf("Generating AI suggestions using %s...\n", cfg.AIProvider)
-
-		aiCfg := &ai.Config{
-			Provider:    cfg.AIProvider,
-			Model:       cfg.AIModel,
-			APIKey:      cfg.AIKey,
-			BaseURL:     cfg.AIBaseURL,
-			Temperature: 0.7,
-		}
-
-		generator, err := ai.NewGenerator(aiCfg)
-		if err != nil {
-			fmt.Printf("Warning: AI generation failed: %v\n", err)
+		if cfg.Seed == "" {
+			fmt.Println("Warning: AI generation usually requires a seed keyword for context. Skipping AI generation.")
 		} else {
-			aiNames, err := generator.Generate(ctx, cfg.Seed, cfg.AICount)
+			fmt.Printf("Generating AI suggestions using %s...\n", cfg.AIProvider)
+
+			aiCfg := &ai.Config{
+				Provider:    cfg.AIProvider,
+				Model:       cfg.AIModel,
+				APIKey:      cfg.AIKey,
+				BaseURL:     cfg.AIBaseURL,
+				Temperature: 0.7,
+			}
+
+			generator, err := ai.NewGenerator(aiCfg)
 			if err != nil {
 				fmt.Printf("Warning: AI generation failed: %v\n", err)
 			} else {
-				add(aiNames)
-				fmt.Printf("AI (%s) generated %d names\n", generator.Name(), len(aiNames))
+				aiNames, err := generator.Generate(ctx, cfg.Seed, cfg.AICount)
+				if err != nil {
+					fmt.Printf("Warning: AI generation failed: %v\n", err)
+				} else {
+					add(aiNames)
+					fmt.Printf("AI (%s) generated %d names\n", generator.Name(), len(aiNames))
+				}
 			}
 		}
 	}
@@ -286,7 +287,8 @@ func generateNames(ctx context.Context) ([]string, error) {
 }
 
 func printBanner() {
-	banner := `
+	if cfg.NoColor {
+		banner := `
      ____  _____  __ _           _
     / ___|___ / / _(_)_ __   __| | ___ _ __
     \___ \ |_ \| |_| | '_ \ / _` + "`" + ` |/ _ \ '__|
@@ -294,7 +296,62 @@ func printBanner() {
     |____/____/|_| |_|_| |_|\__,_|\___|_|
                                         %s
     AI-Powered S3 Bucket Enumeration Tool
+    Author: Ali Sünbül (xeloxa)
+    Email:  alisunbul@proton.me
+    Repo:   https://github.com/xeloxa/s3finder
     ─────────────────────────────────────────
 `
-	fmt.Printf(banner, version)
+		fmt.Printf(banner, version)
+		return
+	}
+
+	lines := []string{
+		"     ____  _____  __ _           _",
+		"    / ___|___ / / _(_)_ __   __| | ___ _ __",
+		"    \\___ \\ |_ \\| |_| | '_ \\ / _` |/ _ \\ '__|",
+		"     ___) |__) |  _| | | | | (_| |  __/ |",
+		"    |____/____/|_| |_|_| |_|\\__,_|\\___|_|",
+		"                                        " + version,
+		"    AI-Powered S3 Bucket Enumeration Tool",
+		"    Author: Ali Sünbül (xeloxa)",
+		"    Email:  alisunbul@proton.me",
+		"    Repo:   https://github.com/xeloxa/s3finder",
+		"    ─────────────────────────────────────────",
+	}
+
+	type rangeColors struct {
+		startR, startG, startB int
+		endR, endG, endB       int
+	}
+
+	logoGradient := rangeColors{76, 175, 80, 118, 221, 118}
+	infoGradient := rangeColors{0, 188, 212, 33, 150, 243}
+	authorGradient := rangeColors{255, 235, 59, 255, 152, 0}
+	sepGradient := rangeColors{158, 158, 158, 66, 66, 66}
+
+	fmt.Println() // Add top margin
+	for i, line := range lines {
+		var grad rangeColors
+		switch {
+		case i <= 4:
+			grad = logoGradient
+		case i <= 6:
+			grad = infoGradient
+		case i <= 9:
+			grad = authorGradient
+		default:
+			grad = sepGradient
+		}
+
+		for j, char := range line {
+			p := float64(j) / float64(len(line))
+			r := int(float64(grad.startR) + p*float64(grad.endR-grad.startR))
+			g := int(float64(grad.startG) + p*float64(grad.endG-grad.startG))
+			b := int(float64(grad.startB) + p*float64(grad.endB-grad.startB))
+
+			fmt.Printf("\033[38;2;%d;%d;%dm%c", r, g, b, char)
+		}
+		fmt.Println("\033[0m")
+	}
+	fmt.Println() // Add bottom margin
 }

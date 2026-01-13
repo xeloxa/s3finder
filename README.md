@@ -26,7 +26,7 @@
 
 ---
 
-A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Combines traditional wordlist scanning with LLM-powered suggestions to find buckets that other tools miss.
+A high-performance CLI tool for discovering AWS S3 buckets using intelligent name generation. Decouples input sources for precise control: permutations only apply to the provided seed, while wordlists and CT logs are processed as raw inputs.
 
 <p align="center">
   <img src="banner.png" alt="S3Finder Banner" width="100%">
@@ -34,6 +34,8 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 
 ## Features
 
+- **Decoupled Input Sources** — Independent handling of seeds, wordlists, and domains (no cross-contamination)
+- **Optional Seed** — Scan using only a wordlist or domain without requiring a seed keyword
 - **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
 - **CT Log Reconnaissance** — Discover subdomains via Certificate Transparency logs (crt.sh)
 - **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate smart bucket name variations
@@ -102,18 +104,17 @@ go build -o s3finder ./cmd/s3finder
 ## Quick Start
 
 ```bash
-# Basic scan with permutations
+# Basic scan with permutations of a seed
 s3finder -s acme-corp
 
-# With domain for CT log subdomain discovery
-s3finder -s acme -d acme.com
+# Scan using ONLY a wordlist (no permutations)
+s3finder -w wordlist.txt
 
-# With wordlist
-s3finder -s acme-corp -w wordlists/common.txt
+# Scan using ONLY a domain (CT log discovery)
+s3finder -d acme.com
 
-# With AI generation
-export OPENAI_API_KEY=sk-xxxxx
-s3finder -s acme-corp --ai
+# Combined independent sources
+s3finder -s acme -w custom.txt -d acme.com
 
 # High-speed scan
 s3finder -s acme-corp -t 200 --rps 1000
@@ -123,34 +124,37 @@ s3finder -s acme-corp -t 200 --rps 1000
 
 ## Usage
 
-### Basic Scan
+### Seed-Based Permutations
 
 ```bash
-# Scan with permutations of a seed keyword
+# Scan with 780+ permutations of a seed keyword
 s3finder -s acme-corp
 ```
 
-### With Wordlist
+### Wordlist Scanning (Raw Mode)
+
+Wordlists are now processed as raw inputs. They are **not** combined with the seed or permuted, giving you exact control over what is scanned.
 
 ```bash
-# Combine wordlist with seed-based permutations
-s3finder -s acme-corp -w wordlists/common.txt
+# Scan exactly what is in the wordlist
+s3finder -w wordlists/common.txt
 ```
 
-### With CT Log Subdomain Discovery
+### CT Log Reconnaissance (As-Is Mode)
+
+Discovered subdomains are scanned exactly as they appear in Certificate Transparency logs.
 
 ```bash
-# Fetch subdomains from Certificate Transparency logs
-s3finder -s acme -d acme.com
-
-# Combine CT logs with AI for maximum coverage
-s3finder -s acme -d acme.com --ai
+# Fetch and scan subdomains from CT logs
+s3finder -d acme.com
 
 # Limit CT results (default: 100)
-s3finder -s acme -d acme.com --ct-limit 50
+s3finder -d acme.com --ct-limit 50
 ```
 
 ### AI-Powered Scanning
+
+AI generation typically requires a seed for context.
 
 ```bash
 # OpenAI (default)
@@ -164,12 +168,6 @@ s3finder -s acme-corp --ai --ai-provider anthropic
 # Google Gemini
 export GEMINI_API_KEY=xxxxx
 s3finder -s acme-corp --ai --ai-provider gemini
-
-# Local Ollama
-s3finder -s acme-corp --ai --ai-provider ollama --ai-url http://localhost:11434
-
-# Using a proxy or custom endpoint
-s3finder -s acme-corp --ai --ai-provider openai --ai-url https://your-proxy.com/v1
 ```
 
 ### High-Speed Scanning
@@ -198,13 +196,13 @@ s3finder -s acme-corp --no-color
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--seed` | `-s` | *required* | Target keyword for bucket name generation |
+| `--seed` | `-s` | | Target keyword for bucket name generation |
 | `--domain` | `-d` | | Target domain for CT log subdomain discovery |
 | `--ct-limit` | | `100` | Maximum subdomains to fetch from CT logs |
 | `--wordlist` | `-w` | | Path to wordlist file |
-| `--threads` | `-t` | `100` | Number of concurrent workers |
-| `--rps` | | `500` | Maximum requests per second |
-| `--timeout` | | `10` | Request timeout in seconds |
+| `--threads` | `-t` | `50` | Number of concurrent workers |
+| `--rps` | | `150` | Maximum requests per second |
+| `--timeout` | | `15` | Request timeout in seconds |
 | `--deep` | | `true` | Perform deep inspection on found buckets |
 | `--ai` | | `false` | Enable AI-powered name generation |
 | `--ai-provider` | | `openai` | AI provider: `openai`, `ollama`, `anthropic`, `gemini` |
@@ -216,6 +214,9 @@ s3finder -s acme-corp --no-color
 | `--format` | `-f` | `json` | Output format: `json`, `txt` |
 | `--no-color` | | `false` | Disable colored output |
 | `--verbose` | `-v` | `false` | Verbose output |
+
+> [!NOTE]
+> At least one input source (`--seed`, `--wordlist`, `--domain`, or `--ai`) must be provided.
 
 ---
 

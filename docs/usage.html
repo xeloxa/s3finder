@@ -63,47 +63,49 @@
 s3finder [command]</code></pre>
 
         <h2>Required Flags</h2>
+        <p>At least one input source must be provided. All sources are decoupled and independent.</p>
         <table>
           <thead><tr><th>Flag</th><th>Short</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><code>--seed</code></td><td><code>-s</code></td><td>Target keyword for bucket name generation (required)</td></tr>
+            <tr><td><code>--seed</code></td><td><code>-s</code></td><td>Target keyword for bucket name generation (permuted)</td></tr>
+            <tr><td><code>--wordlist</code></td><td><code>-w</code></td><td>Path to wordlist file (raw mode)</td></tr>
+            <tr><td><code>--domain</code></td><td><code>-d</code></td><td>Target domain for CT log discovery (as-is mode)</td></tr>
           </tbody>
         </table>
 
         <h2>Input Options</h2>
-        <h3>Seed Keyword</h3>
-        <p>The seed is the base keyword for generating bucket name variations:</p>
+        <p>s3finder features <strong>Decoupled Input Sources</strong>. Seeds, wordlists, and domains are processed independently to ensure precise scanning without unwanted combinations.</p>
+
+        <h3>Seed Keyword (Permuted)</h3>
+        <p>The seed is used to generate 780+ automatic name variations (prefixes, suffixes, regions, etc.):</p>
         <div class="code-header"><span class="code-lang">bash</span></div>
         <pre><code># Company name
 s3finder -s acme-corp
 
-# Product name
-s3finder -s myproduct
-
 # Domain without TLD
 s3finder -s example</code></pre>
 
-        <h3>Wordlist</h3>
-        <p>Combine with a wordlist for additional coverage:</p>
+        <h3>Wordlist (Raw Mode)</h3>
+        <p>Wordlists are processed in raw mode. Entries are scanned exactly as they appear in the file, without permutations or seed mixing:</p>
         <div class="code-header"><span class="code-lang">bash</span></div>
         <pre><code># Use included wordlist
-s3finder -s acme -w wordlists/common.txt
+s3finder -w wordlists/common.txt
 
 # Use custom wordlist
-s3finder -s acme -w /path/to/custom-wordlist.txt</code></pre>
+s3finder -w /path/to/custom-wordlist.txt</code></pre>
 
-        <h3>CT Log Subdomain Discovery</h3>
-        <p>Use Certificate Transparency logs to discover real subdomains and generate targeted bucket names:</p>
+        <h3>CT Log Subdomain Discovery (As-Is Mode)</h3>
+        <p>Discovered subdomains are scanned exactly as found in Certificate Transparency logs:</p>
         <div class="code-header"><span class="code-lang">bash</span></div>
-        <pre><code># Fetch subdomains from CT logs
+        <pre><code># Fetch and scan subdomains from CT logs
+s3finder -d acme.com
+
+# Combine with a seed for even more coverage
 s3finder -s acme -d acme.com
 
-# Combine CT logs with AI for maximum coverage
-s3finder -s acme -d acme.com --ai
-
 # Limit CT results (default: 100)
-s3finder -s acme -d acme.com --ct-limit 50</code></pre>
-        <p>CT logs query crt.sh to find subdomains like <code>dev.acme.com</code>, <code>staging.acme.com</code>, which are then converted to potential bucket names like <code>dev-acme</code>, <code>staging-acme</code>.</p>
+s3finder -d acme.com --ct-limit 50</code></pre>
+        <p>CT logs query crt.sh to find subdomains like <code>dev.acme.com</code> and <code>staging.acme.com</code>, which are scanned directly as bucket names.</p>
 
         <h2>Performance Options</h2>
         <table>

@@ -154,18 +154,17 @@
           <span class="code-lang">bash</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><code># Basic scan with permutations
+        <pre><code># Basic scan with permutations of a seed
 s3finder -s acme-corp
 
-# With CT log subdomain discovery
-s3finder -s acme -d acme.com
+# Scan using ONLY a wordlist (no permutations)
+s3finder -w wordlist.txt
 
-# With AI-powered name generation
-export OPENAI_API_KEY=sk-xxxxx
-s3finder -s acme-corp --ai
+# Scan using ONLY a domain (CT log discovery)
+s3finder -d acme.com
 
-# High-speed scan with custom settings
-s3finder -s acme-corp -t 200 --rps 1000 -w wordlists/common.txt</code></pre>
+# Combined independent sources
+s3finder -s acme -w custom.txt -d acme.com</code></pre>
 
         <h2>Sample Output</h2>
         <div class="code-header">

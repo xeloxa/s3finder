@@ -29,6 +29,7 @@ type ProgressConfig struct {
 	ShowRPS       bool
 	UseColors     bool
 	BarWidth      int
+	ExternalMu    *sync.Mutex // Optional external mutex for synchronization
 }
 
 // Progress displays real-time scanning progress.
@@ -170,7 +171,13 @@ func (p *Progress) render(final bool) {
 	p.renderUnlocked(final)
 }
 
+// renderUnlocked re-renders the progress bar without locking internal mu.
 func (p *Progress) renderUnlocked(final bool) {
+	if p.cfg.ExternalMu != nil {
+		p.cfg.ExternalMu.Lock()
+		defer p.cfg.ExternalMu.Unlock()
+	}
+
 	scanned := p.scanned.Load()
 	_ = p.found.Load() // Currently unused but tracked for future use
 	public := p.public.Load()

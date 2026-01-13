@@ -66,7 +66,7 @@
         </div>
         <pre><code>s3finder -s your-target-company</code></pre>
 
-        <p>Replace <code>your-target-company</code> with the organization you're authorized to test. s3finder generates 780+ bucket name variations automatically.</p>
+        <p>Replace <code>your-target-company</code> with the organization you're authorized to test. s3finder generates 780+ bucket name variations automatically. You can also scan directly using a wordlist (<code>-w</code>) or a domain (<code>-d</code>) without a seed.</p>
 
         <h2>Understanding the Output</h2>
         <div class="code-header">
@@ -130,10 +130,10 @@ Results saved to: results.json</code></pre>
           <span class="code-lang">bash</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
-        <pre><code># Discover subdomains and generate targeted bucket names
-s3finder -s target -d target.com</code></pre>
+        <pre><code># Discover and scan subdomains as-is
+s3finder -d target.com</code></pre>
 
-        <p>This queries crt.sh for subdomains like <code>dev.target.com</code>, <code>staging.target.com</code>, which become bucket name seeds.</p>
+        <p>This queries crt.sh for subdomains like <code>dev.target.com</code> and <code>staging.target.com</code>, which are scanned directly as bucket names.</p>
 
         <h2>Enabling AI Generation</h2>
         <p>For smarter bucket name suggestions:</p>
