@@ -53,10 +53,28 @@ snapshot:
 
 changelog:
   sort: asc
+  use: github
+  groups:
+    - title: '🚀 Features'
+      regexp: "^feat[(\\w)]*!?:.+$"
+      order: 0
+    - title: '🐛 Bug Fixes'
+      regexp: "^fix[(\\w)]*!?:.+$"
+      order: 1
+    - title: '📖 Documentation'
+      regexp: "^docs[(\\w)]*!?:.+$"
+      order: 2
+    - title: '⚙️ Maintenance'
+      regexp: "^chore[(\\w)]*!?:.+$"
+      order: 3
+    - title: '🧪 Testing'
+      regexp: "^test[(\\w)]*!?:.+$"
+      order: 4
+    - title: '🔄 Refactor'
+      regexp: "^refactor[(\\w)]*!?:.+$"
+      order: 5
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
       - '^ci:'
       - Merge pull request
       - Merge branch
@@ -68,6 +86,26 @@ release:
   draft: false
   prerelease: auto
   name_template: "{{.ProjectName}} v{{.Version}}"
+  header: |
+    <p align="center">
+      <img src="https://raw.githubusercontent.com/xeloxa/s3finder/master/banner.png" alt="s3finder banner" width="100%">
+    </p>
+
+    ## What's New in v{{ .Version }} 🚀
+
+    Welcome to the latest release of **s3finder**! This version introduces significant architectural improvements, enhanced CLI branding, and more precise scanning controls.
+
+  footer: |
+    ---
+    ### 🛡️ Security Note
+    This tool is intended for authorized security testing and research. Always ensure you have permission before scanning targets.
+
+    ### 🤝 Community & Support
+    - **Found a bug?** [Open an issue](https://github.com/xeloxa/s3finder/issues)
+    - **Want to contribute?** [Check our contributing guide](https://github.com/xeloxa/s3finder/blob/master/CONTRIBUTING.md)
+    - **Star the repo** to show your support! ⭐
+
+    **Full Changelog**: https://github.com/xeloxa/s3finder/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 brews:
   - name: s3finder
