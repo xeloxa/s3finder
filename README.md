@@ -47,10 +47,8 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 
 ---
 
-## Demo
-
 <p align="center">
-  <img src="demo.gif" alt="s3finder demo" width="700">
+  <img src="demo.gif" alt="s3finder demo" >
 </p>
 
 ---
