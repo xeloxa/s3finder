@@ -292,7 +292,7 @@ Generated 828 unique bucket names to scan
 [PUBLIC] acme-corp-assets-2024 (objects: 100+, region: us-west-2)
          https://acme-corp-assets-2024.s3.amazonaws.com
 
-[██████████████████████████████] 100.0% [828/828] Public:2 Private:1 Err:0 145 r/s ETA:0s [2m34s]
+[████████████████████████████████] 100.0% [828/828] Public:2 Private:1 Err:0 145 r/s ETA:0s [2m34s]
 
 ────────────────────────────────────────
 Scan completed in 2m34s

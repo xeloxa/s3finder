@@ -88,6 +88,8 @@ Generated 780 unique bucket names to scan
          https://target-backup.s3.amazonaws.com
 [PRIVATE] target-internal (region: eu-west-1)
 
+[██████████████████████████████] 100.0% [780/780] Public:1 Private:1 Err:12 145 r/s ETA:0s [45s]
+
 ────────────────────────────────────────
 Scan completed in 45s
 Scanned: 780 | Found: 2 | Public: 1 | Private: 1 | Errors: 12
@@ -109,6 +111,26 @@ Results saved to: results.json</code></pre>
               <td>Bucket exists but access denied</td>
               <td>Requires credentials</td>
             </tr>
+            <tr>
+              <td><span class="badge badge-danger">ERROR</span></td>
+              <td>Request failed (timeout, throttled)</td>
+              <td>Retry with lower RPS</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Progress Bar</h3>
+        <p>The progress bar shows real-time scan statistics:</p>
+        <table>
+          <thead>
+            <tr><th>Element</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>[██████]</code></td><td>Completion percentage</td></tr>
+            <tr><td><code>[780/780]</code></td><td>Scanned / Total buckets</td></tr>
+            <tr><td><code>Public:1 Private:1 Err:12</code></td><td>Discovery counts</td></tr>
+            <tr><td><code>145 r/s</code></td><td>Requests per second</td></tr>
+            <tr><td><code>ETA:0s [45s]</code></td><td>Estimated time / Elapsed time</td></tr>
           </tbody>
         </table>
 
