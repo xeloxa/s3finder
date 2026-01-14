@@ -7,9 +7,10 @@ import (
 // Generator defines the interface for AI-powered bucket name generation.
 // Implementations can use different LLM providers (OpenAI, Ollama, Anthropic, etc.)
 type Generator interface {
-	// Generate creates bucket name suggestions based on a seed keyword.
+	// Generate creates bucket name suggestions based on a seed keyword and optional context words.
+	// contextWords are extracted from CT logs or other sources to help the AI discover patterns.
 	// count specifies the approximate number of names to generate.
-	Generate(ctx context.Context, seed string, count int) ([]string, error)
+	Generate(ctx context.Context, seed string, contextWords []string, count int) ([]string, error)
 
 	// Name returns the provider identifier (e.g., "openai", "ollama", "anthropic").
 	Name() string

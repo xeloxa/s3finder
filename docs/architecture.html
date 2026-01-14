@@ -23,7 +23,7 @@
         <a href="index.html" class="sidebar-logo">
           <img src="images/logo.png" alt="s3finder">
         </a>
-        <div class="sidebar-version">v1.2.3</div>
+        <div class="sidebar-version">v1.2.4</div>
       </div>
       <nav class="sidebar-nav">
         <div class="nav-section">
@@ -144,18 +144,28 @@
           </div>
           <div class="component-item">
             <h4>HTTP Prober</h4>
-            <p>Performs HEAD requests to S3 endpoints. Optimized HTTP client with connection pooling.</p>
+            <p>Performs HEAD requests to S3 endpoints. Features HTTP/2 support, connection pooling, keep-alives, and automatic retry with exponential backoff.</p>
             <code>pkg/scanner/prober.go</code>
           </div>
           <div class="component-item">
             <h4>Deep Inspector</h4>
-            <p>Uses AWS SDK to gather detailed bucket info: region, ACL, object listing.</p>
+            <p>Uses AWS SDK to gather detailed bucket info: region, ACL, object listing. Handles region mismatch with automatic retry.</p>
             <code>pkg/scanner/inspector.go</code>
           </div>
           <div class="component-item">
             <h4>Adaptive Rate Limiter</h4>
-            <p>AIMD algorithm that auto-adjusts based on 429/503 responses from AWS.</p>
+            <p>AIMD algorithm that auto-adjusts based on 429/503 responses from AWS. Floor at 20 RPS for usability.</p>
             <code>pkg/ratelimit/adaptive.go</code>
+          </div>
+          <div class="component-item">
+            <h4>Custom DNS Resolver</h4>
+            <p>Uses Google (8.8.8.8) and Cloudflare (1.1.1.1) DNS to prevent local resolver saturation during high-volume scans.</p>
+            <code>pkg/dns/resolver.go</code>
+          </div>
+          <div class="component-item">
+            <h4>Progress Bar</h4>
+            <p>Live TUI progress display showing scanned count, RPS, ETA, and discovery statistics in real-time.</p>
+            <code>pkg/output/progress.go</code>
           </div>
           <div class="component-item">
             <h4>Permutation Engine</h4>
@@ -226,7 +236,7 @@
       </div>
 
       <footer class="docs-footer">
-        <p>s3finder v1.2.3 - Built with Go. Licensed under MIT.</p>
+        <p>s3finder v1.2.4 - Built with Go. Licensed under MIT.</p>
       </footer>
     </main>
   </div>

@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,6 +13,7 @@ type ScanResult struct {
 	Bucket    string         `json:"bucket"`
 	Probe     ProbeResult    `json:"probe_result"`
 	Inspect   *InspectResult `json:"inspect,omitempty"`
+	Warning   string         `json:"warning,omitempty"`
 	Error     string         `json:"error,omitempty"`
 	Timestamp time.Time      `json:"timestamp"`
 }
@@ -181,6 +183,11 @@ func (s *Scanner) processBucket(ctx context.Context, bucket string) {
 		Bucket:    bucket,
 		Probe:     probe.Result,
 		Timestamp: time.Now(),
+	}
+
+	// Add warning for buckets with dots
+	if strings.Contains(bucket, ".") {
+		result.Warning = "Bucket name contains dots (.), which may cause SSL/TLS certificate validation issues. Virtual-hosted style access is used."
 	}
 
 	if probe.Error != nil {

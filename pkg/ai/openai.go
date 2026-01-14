@@ -43,9 +43,31 @@ func NewOpenAI(cfg *Config) (*OpenAI, error) {
 	}, nil
 }
 
-// Generate creates bucket names using OpenAI.
-func (o *OpenAI) Generate(ctx context.Context, seed string, count int) ([]string, error) {
-	prompt := fmt.Sprintf(BucketPrompt, seed, count, seed)
+// Generate creates bucket names using OpenAI with pattern discovery.
+func (o *OpenAI) Generate(ctx context.Context, seed string, contextWords []string, count int) ([]string, error) {
+	contextStr := strings.Join(contextWords, ", ")
+	if contextStr == "" {
+		contextStr = "none"
+	}
+
+	prompt := fmt.Sprintf(`You are an expert security researcher specializing in AWS S3 infrastructure analysis.
+
+TARGET CONTEXT:
+- Seed Keyword: "%s"
+- Known infrastructure words found in CT logs: [%s]
+
+TASK:
+1. Analyze the "Known infrastructure words" to identify naming conventions (patterns) used by this organization (e.g., prefix-suffix order, use of dashes, specific environment tags like -dev, -prod, -staging, -internal).
+2. Generate %d unique, realistic S3 bucket names that follow these discovered patterns.
+3. Incorporate the "Seed Keyword" into these patterns.
+4. If no clear patterns are found, use standard industry patterns (e.g., {seed}-backups, logs-{seed}, etc.)
+
+Rules:
+- Names must be valid S3 bucket names (lowercase, 3-63 chars, no underscores).
+- Focus on high-value targets: backups, database, finance, employee, secret, config, k8s, docker.
+- NO explanations, just bucket names, one per line.
+
+Generate names:`, seed, contextStr, count)
 
 	resp, err := o.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model:       o.model,

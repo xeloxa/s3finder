@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -211,6 +212,7 @@ func run(cmd *cobra.Command, args []string) error {
 func generateNames(ctx context.Context) ([]string, error) {
 	seen := make(map[string]struct{})
 	var allNames []string
+	var contextWords []string
 
 	add := func(names []string) {
 		for _, name := range names {
@@ -232,7 +234,31 @@ func generateNames(ctx context.Context) ([]string, error) {
 			fmt.Printf("Warning: CT log fetch failed: %v\n", err)
 		} else {
 			add(subdomains)
-			fmt.Printf("CT logs found %d subdomains\n", len(subdomains))
+			// Extract words from subdomains and add them as seeds for permutations
+			wordMap := make(map[string]struct{})
+			for _, sub := range subdomains {
+				// Remove the base domain if present to focus on subparts
+				cleanSub := strings.TrimSuffix(sub, "."+cfg.Domain)
+				// Split by dots and dashes
+				parts := strings.FieldsFunc(cleanSub, func(r rune) bool {
+					return r == '.' || r == '-'
+				})
+				for _, part := range parts {
+					if len(part) > 2 { // Ignore very short parts like 'm', 'v1'
+						wordMap[part] = struct{}{}
+					}
+				}
+			}
+
+			if len(wordMap) > 0 {
+				fmt.Printf("Extracted %d unique words from CT logs for deeper scanning\n", len(wordMap))
+				for word := range wordMap {
+					contextWords = append(contextWords, word)
+					// Add permutations of each extracted word
+					add(engine.Generate(word))
+				}
+			}
+			fmt.Printf("CT logs processing completed\n")
 		}
 	}
 
@@ -255,10 +281,10 @@ func generateNames(ctx context.Context) ([]string, error) {
 
 	// 4. AI generation
 	if cfg.AIEnabled {
-		if cfg.Seed == "" {
-			fmt.Println("Warning: AI generation usually requires a seed keyword for context. Skipping AI generation.")
+		if cfg.Seed == "" && len(contextWords) == 0 {
+			fmt.Println("Warning: AI generation requires a seed keyword or discovered context. Skipping AI generation.")
 		} else {
-			fmt.Printf("Generating AI suggestions using %s...\n", cfg.AIProvider)
+			fmt.Printf("Generating AI suggestions using %s (with context-aware discovery)...\n", cfg.AIProvider)
 
 			aiCfg := &ai.Config{
 				Provider:    cfg.AIProvider,
@@ -272,12 +298,13 @@ func generateNames(ctx context.Context) ([]string, error) {
 			if err != nil {
 				fmt.Printf("Warning: AI generation failed: %v\n", err)
 			} else {
-				aiNames, err := generator.Generate(ctx, cfg.Seed, cfg.AICount)
+				// Use both seed and discovered context words
+				aiNames, err := generator.Generate(ctx, cfg.Seed, contextWords, cfg.AICount)
 				if err != nil {
 					fmt.Printf("Warning: AI generation failed: %v\n", err)
 				} else {
 					add(aiNames)
-					fmt.Printf("AI (%s) generated %d names\n", generator.Name(), len(aiNames))
+					fmt.Printf("AI (%s) discovered patterns and generated %d names\n", generator.Name(), len(aiNames))
 				}
 			}
 		}

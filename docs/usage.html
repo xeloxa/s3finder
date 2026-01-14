@@ -23,7 +23,7 @@
         <a href="index.html" class="sidebar-logo">
           <img src="images/logo.png" alt="s3finder">
         </a>
-        <div class="sidebar-version">v1.2.3</div>
+        <div class="sidebar-version">v1.2.4</div>
       </div>
       <nav class="sidebar-nav">
         <div class="nav-section">
@@ -95,7 +95,7 @@ s3finder -w wordlists/common.txt
 s3finder -w /path/to/custom-wordlist.txt</code></pre>
 
         <h3>CT Log Subdomain Discovery (As-Is Mode)</h3>
-        <p>Discovered subdomains are scanned exactly as found in Certificate Transparency logs:</p>
+        <p>Discovered subdomains are scanned exactly as found in Certificate Transparency logs. Additionally, unique words are extracted from subdomains to generate permutations for deeper scanning:</p>
         <div class="code-header"><span class="code-lang">bash</span></div>
         <pre><code># Fetch and scan subdomains from CT logs
 s3finder -d acme.com
@@ -105,15 +105,15 @@ s3finder -s acme -d acme.com
 
 # Limit CT results (default: 100)
 s3finder -d acme.com --ct-limit 50</code></pre>
-        <p>CT logs query crt.sh to find subdomains like <code>dev.acme.com</code> and <code>staging.acme.com</code>, which are scanned directly as bucket names.</p>
+        <p>CT logs query crt.sh to find subdomains like <code>dev.acme.com</code> and <code>staging.acme.com</code>. Each subdomain is scanned directly, and unique words (e.g., "dev", "staging") are extracted for additional permutation-based scanning.</p>
 
         <h2>Performance Options</h2>
         <table>
           <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><code>--threads, -t</code></td><td>100</td><td>Number of concurrent workers</td></tr>
-            <tr><td><code>--rps</code></td><td>500</td><td>Maximum requests per second</td></tr>
-            <tr><td><code>--timeout</code></td><td>10</td><td>Request timeout in seconds</td></tr>
+            <tr><td><code>--threads, -t</code></td><td>50</td><td>Number of concurrent workers</td></tr>
+            <tr><td><code>--rps</code></td><td>150</td><td>Maximum requests per second</td></tr>
+            <tr><td><code>--timeout</code></td><td>15</td><td>Request timeout in seconds</td></tr>
           </tbody>
         </table>
 
@@ -177,7 +177,7 @@ s3finder -s acme -v</code></pre>
           <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>--ai</code></td><td>false</td><td>Enable AI-powered name generation</td></tr>
-            <tr><td><code>--ai-provider</code></td><td>openai</td><td>AI provider (openai, ollama, anthropic)</td></tr>
+            <tr><td><code>--ai-provider</code></td><td>openai</td><td>AI provider (openai, ollama, anthropic, gemini)</td></tr>
             <tr><td><code>--ai-model</code></td><td>gpt-4o-mini</td><td>AI model name</td></tr>
             <tr><td><code>--ai-count</code></td><td>50</td><td>Number of AI-generated names</td></tr>
           </tbody>
@@ -210,7 +210,7 @@ s3finder -s bugbounty-target --ai -t 200 --rps 800</code></pre>
       </div>
 
       <footer class="docs-footer">
-        <p>s3finder v1.2.3 - Built with Go. Licensed under MIT.</p>
+        <p>s3finder v1.2.4 - Built with Go. Licensed under MIT.</p>
       </footer>
     </main>
   </div>

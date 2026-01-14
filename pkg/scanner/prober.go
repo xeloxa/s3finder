@@ -89,7 +89,7 @@ func NewProber(cfg *ProberConfig) *Prober {
 		ResponseHeaderTimeout: 5 * time.Second,
 		ForceAttemptHTTP2:     true,
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
+			InsecureSkipVerify: true,
 		},
 	}
 

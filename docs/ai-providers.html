@@ -23,7 +23,7 @@
         <a href="index.html" class="sidebar-logo">
           <img src="images/logo.png" alt="s3finder">
         </a>
-        <div class="sidebar-version">v1.2.3</div>
+        <div class="sidebar-version">v1.2.4</div>
       </div>
       <nav class="sidebar-nav">
         <div class="nav-section">
@@ -58,12 +58,27 @@
 
       <div class="content-body">
         <h2>Overview</h2>
-        <p>s3finder uses LLMs to generate intelligent bucket name variations. The AI thinks like a "lazy sysadmin" to predict common naming patterns.</p>
+        <p>s3finder uses LLMs to generate intelligent bucket name variations. The AI analyzes CT log data to discover organizational naming patterns and generates bucket names following those conventions.</p>
 
         <div class="alert alert-info">
           <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <div>AI generation is optional. The permutation engine alone generates 780+ variations per seed.</div>
         </div>
+
+        <h3>Context-Aware Generation</h3>
+        <p>When using CT log discovery (<code>-d</code>), the AI receives discovered infrastructure words as context. It analyzes these patterns to generate bucket names that match the organization's naming conventions.</p>
+
+        <h2>Default Models</h2>
+        <p>Each provider has a default model optimized for bucket name generation:</p>
+        <table>
+          <thead><tr><th>Provider</th><th>Default Model</th><th>Environment Variable</th></tr></thead>
+          <tbody>
+            <tr><td>OpenAI</td><td><code>gpt-4o-mini</code></td><td><code>OPENAI_API_KEY</code></td></tr>
+            <tr><td>Anthropic</td><td><code>claude-3-5-haiku-20241022</code></td><td><code>ANTHROPIC_API_KEY</code></td></tr>
+            <tr><td>Gemini</td><td><code>gemini-3-flash-preview</code></td><td><code>GEMINI_API_KEY</code></td></tr>
+            <tr><td>Ollama</td><td><code>llama3.2</code></td><td>N/A (local)</td></tr>
+          </tbody>
+        </table>
 
         <h2>Supported Providers</h2>
         <div class="card-grid">
@@ -261,7 +276,7 @@ acme-corp-analytics-reports</code></pre>
       </div>
 
       <footer class="docs-footer">
-        <p>s3finder v1.2.3 - Built with Go. Licensed under MIT.</p>
+        <p>s3finder v1.2.4 - Built with Go. Licensed under MIT.</p>
       </footer>
     </main>
   </div>

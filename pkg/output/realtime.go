@@ -152,7 +152,16 @@ func (r *RealtimeWriter) formatPublic(result *scanner.ScanResult) string {
 		urlLine = fmt.Sprintf("\n         %s", bucketURL)
 	}
 
-	return fmt.Sprintf("%s %s%s%s", tag, bucketDisplay, details, urlLine)
+	warningLine := ""
+	if result.Warning != "" {
+		if r.useColors {
+			warningLine = fmt.Sprintf("\n         %s⚠ %s%s", colorYellow, result.Warning, colorReset)
+		} else {
+			warningLine = fmt.Sprintf("\n         Warning: %s", result.Warning)
+		}
+	}
+
+	return fmt.Sprintf("%s %s%s%s%s", tag, bucketDisplay, details, urlLine, warningLine)
 }
 
 func (r *RealtimeWriter) formatPrivate(result *scanner.ScanResult) string {
@@ -178,7 +187,16 @@ func (r *RealtimeWriter) formatPrivate(result *scanner.ScanResult) string {
 		}
 	}
 
-	return fmt.Sprintf("%s %s%s", tag, bucketDisplay, details)
+	warningLine := ""
+	if result.Warning != "" {
+		if r.useColors {
+			warningLine = fmt.Sprintf("\n         %s⚠ %s%s", colorYellow, result.Warning, colorReset)
+		} else {
+			warningLine = fmt.Sprintf("\n         Warning: %s", result.Warning)
+		}
+	}
+
+	return fmt.Sprintf("%s %s%s%s", tag, bucketDisplay, details, warningLine)
 }
 
 // makeHyperlink creates an OSC 8 terminal hyperlink

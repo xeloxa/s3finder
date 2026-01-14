@@ -82,8 +82,12 @@ func NewGemini(cfg *Config) (*Gemini, error) {
 }
 
 // Generate creates bucket names using Google Gemini.
-func (g *Gemini) Generate(ctx context.Context, seed string, count int) ([]string, error) {
-	prompt := fmt.Sprintf(BucketPrompt, seed, count, seed)
+func (g *Gemini) Generate(ctx context.Context, seed string, contextWords []string, count int) ([]string, error) {
+	contextStr := ""
+	if len(contextWords) > 0 {
+		contextStr = fmt.Sprintf("\nContext (discovered infrastructure words): %v", contextWords)
+	}
+	prompt := fmt.Sprintf(BucketPrompt+contextStr, seed, count, seed)
 
 	reqBody := geminiRequest{
 		Contents: []geminiContent{

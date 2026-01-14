@@ -24,7 +24,7 @@
         <a href="index.html" class="sidebar-logo">
           <img src="images/logo.png" alt="s3finder">
         </a>
-        <div class="sidebar-version">v1.2.3</div>
+        <div class="sidebar-version">v1.2.4</div>
       </div>
 
       <nav class="sidebar-nav">
@@ -100,7 +100,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
             </div>
             <h3>CT Log Recon</h3>
-            <p>Discover subdomains via Certificate Transparency logs (crt.sh) for targeted scanning.</p>
+            <p>Discover subdomains via CT logs (crt.sh) with automatic word extraction for deeper scanning.</p>
           </div>
 
           <div class="feature-item">
@@ -108,7 +108,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             </div>
             <h3>AI-Powered</h3>
-            <p>OpenAI, Ollama, Anthropic, or Gemini generate smart bucket name variations.</p>
+            <p>OpenAI, Ollama, Anthropic, or Gemini generate context-aware bucket name variations.</p>
           </div>
 
           <div class="feature-item">
@@ -176,6 +176,8 @@ s3finder -s acme -w custom.txt -d acme.com</code></pre>
 [PUBLIC] acme-corp-assets-2024 (objects: 100+, region: us-west-2)
          https://acme-corp-assets-2024.s3.amazonaws.com
 
+[██████████████████████████████] 100.0% [828/828] Public:2 Private:1 Err:0 145 r/s ETA:0s [2m34s]
+
 ────────────────────────────────────────
 Scan completed in 2m34s
 Scanned: 828 | Found: 3 | Public: 2 | Private: 1 | Errors: 0</code></pre>
@@ -213,7 +215,7 @@ Scanned: 828 | Found: 3 | Public: 2 | Private: 1 | Errors: 0</code></pre>
       </div>
 
       <footer class="docs-footer">
-        <p>s3finder v1.2.3 - Built with Go. Licensed under MIT.</p>
+        <p>s3finder v1.2.4 - Built with Go. Licensed under MIT.</p>
       </footer>
     </main>
   </div>

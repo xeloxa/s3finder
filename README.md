@@ -2,10 +2,6 @@
   <img src="logo.png" alt="s3finder" width="400">
 </p>
 
-> [!IMPORTANT]
-> **THIS APPLICATION IS CURRENTLY UNDER DEVELOPMENT.**
-> All features are in the testing phase and major changes may occur.
-
 <p align="center">
   <strong>AI-Powered S3 Bucket Enumeration Tool</strong>
 </p>
@@ -37,12 +33,15 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 - **Decoupled Input Sources** — Independent handling of seeds, wordlists, and domains (no cross-contamination)
 - **Optional Seed** — Scan using only a wordlist or domain without requiring a seed keyword
 - **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
-- **CT Log Reconnaissance** — Discover subdomains via Certificate Transparency logs (crt.sh)
-- **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate smart bucket name variations
+- **CT Log Reconnaissance** — Discover subdomains via Certificate Transparency logs (crt.sh) with automatic word extraction
+- **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate context-aware bucket name variations
 - **Permutation Engine** — 780+ automatic variations per seed (suffixes, prefixes, years, regions)
 - **Adaptive Rate Limiting** — AIMD algorithm auto-adjusts to avoid throttling and IP blocks
 - **Deep Inspection** — AWS SDK integration reveals region, ACL status, and sample objects
-- **Real-Time Output** — Colored terminal output shows discoveries as they happen
+- **Live Progress Bar** — Real-time TUI showing scanned count, RPS, ETA, and discovery stats
+- **HTTP/2 & Connection Pooling** — Optimized networking with keep-alives and connection reuse
+- **Smart Retry Logic** — Automatic retries with exponential backoff for transient failures
+- **Custom DNS Resolver** — Uses Google/Cloudflare DNS to prevent local resolver saturation
 - **Multiple Formats** — Export results as JSON or TXT for post-processing
 - **Cross-Platform** — Native binaries for Linux, macOS, and Windows (amd64 & arm64)
 
@@ -142,7 +141,7 @@ s3finder -w wordlists/common.txt
 
 ### CT Log Reconnaissance (As-Is Mode)
 
-Discovered subdomains are scanned exactly as they appear in Certificate Transparency logs.
+Discovered subdomains are scanned exactly as they appear in Certificate Transparency logs. Unique words are extracted from subdomains and used to generate additional permutations for deeper scanning.
 
 ```bash
 # Fetch and scan subdomains from CT logs
@@ -152,22 +151,31 @@ s3finder -d acme.com
 s3finder -d acme.com --ct-limit 50
 ```
 
+> [!NOTE]
+> Bucket names containing dots (e.g., `dev.acme.com`) may trigger SSL/TLS certificate warnings due to virtual-hosted style access limitations.
+
 ### AI-Powered Scanning
 
-AI generation typically requires a seed for context.
+AI generation analyzes CT log patterns and generates bucket names matching organizational naming conventions.
 
 ```bash
-# OpenAI (default)
+# OpenAI (default: gpt-4o-mini)
 export OPENAI_API_KEY=sk-xxxxx
 s3finder -s acme-corp --ai
 
-# Anthropic Claude
+# Anthropic Claude (default: claude-3-5-haiku-20241022)
 export ANTHROPIC_API_KEY=sk-ant-xxxxx
 s3finder -s acme-corp --ai --ai-provider anthropic
 
-# Google Gemini
+# Google Gemini (default: gemini-3-flash-preview)
 export GEMINI_API_KEY=xxxxx
 s3finder -s acme-corp --ai --ai-provider gemini
+
+# Ollama local (default: llama3.2)
+s3finder -s acme-corp --ai --ai-provider ollama
+
+# Context-aware: combine with CT logs for pattern discovery
+s3finder -s acme -d acme.com --ai
 ```
 
 ### High-Speed Scanning
@@ -272,7 +280,7 @@ make help
     \___ \ |_ \| |_| | '_ \ / _` |/ _ \ '__|
      ___) |__) |  _| | | | | (_| |  __/ |
     |____/____/|_| |_|_| |_|\__,_|\___|_|
-                                        v1.2.3
+                                        v1.2.4
     AI-Powered S3 Bucket Enumeration Tool
     ─────────────────────────────────────────
 
@@ -281,14 +289,28 @@ AI (openai) generated 48 names
 Generated 828 unique bucket names to scan
 
 [PUBLIC] acme-corp-backup (objects: 1547, region: us-east-1)
+         https://acme-corp-backup.s3.amazonaws.com
 [PRIVATE] acme-corp-internal (region: eu-west-1)
 [PUBLIC] acme-corp-assets-2024 (objects: 100+, region: us-west-2)
+         https://acme-corp-assets-2024.s3.amazonaws.com
+
+[██████████████████████████████] 100.0% [828/828] Public:2 Private:1 Err:0 145 r/s ETA:0s [2m34s]
 
 ────────────────────────────────────────
 Scan completed in 2m34s
 Scanned: 828 | Found: 3 | Public: 2 | Private: 1 | Errors: 0
 Results saved to: results.json
 ```
+
+### Progress Bar
+
+During scanning, a live TUI progress bar displays real-time statistics:
+- **Visual progress** - Fill bar showing scan completion percentage
+- **Scanned count** - Current/total buckets scanned
+- **Public/Private/Errors** - Real-time discovery counts
+- **RPS** - Current requests per second
+- **ETA** - Estimated time remaining
+- **Elapsed time** - Total time since scan started
 
 ### JSON Report
 
