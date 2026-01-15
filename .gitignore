@@ -28,7 +28,3 @@ coverage.html
 # GoReleaser
 /dist/
 
-# AI/Claude metadata
-.beads/
-CODEBASE.md
-CODEBASE.md
