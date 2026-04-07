@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://xeloxa.github.io/s3finder/"><img src="https://img.shields.io/badge/Docs-GitHub%20Pages-blue?style=flat" alt="Documentation"></a>
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go" alt="Go Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
   <a href="https://github.com/xeloxa/s3finder/releases"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey" alt="Platform"></a>
 </p>
 
@@ -436,4 +436,4 @@ This tool is intended for **authorized security testing** and **research purpose
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+Apache License 2.0 - see [LICENSE](LICENSE) for details.
