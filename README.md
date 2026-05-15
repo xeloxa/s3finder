@@ -30,20 +30,20 @@ A high-performance CLI tool for discovering AWS S3 buckets using intelligent nam
 
 ## Features
 
-- **Decoupled Input Sources** — Independent handling of seeds, wordlists, and domains (no cross-contamination)
-- **Optional Seed** — Scan using only a wordlist or domain without requiring a seed keyword
-- **High-Concurrency Scanning** — Worker pool architecture handles thousands of requests simultaneously
-- **CT Log Reconnaissance** — Discover subdomains via Certificate Transparency logs (crt.sh) with automatic word extraction
-- **AI-Powered Generation** — OpenAI, Ollama, Anthropic, or Gemini generate context-aware bucket name variations
-- **Permutation Engine** — 780+ automatic variations per seed (suffixes, prefixes, years, regions)
-- **Adaptive Rate Limiting** — AIMD algorithm auto-adjusts to avoid throttling and IP blocks
-- **Deep Inspection** — AWS SDK integration reveals region, ACL status, and sample objects
-- **Live Progress Bar** — Real-time TUI showing scanned count, RPS, ETA, and discovery stats
-- **HTTP/2 & Connection Pooling** — Optimized networking with keep-alives and connection reuse
-- **Smart Retry Logic** — Automatic retries with exponential backoff for transient failures
-- **Custom DNS Resolver** — Uses Google/Cloudflare DNS to prevent local resolver saturation
-- **Multiple Formats** — Export results as JSON or TXT for post-processing
-- **Cross-Platform** — Native binaries for Linux, macOS, and Windows (amd64 & arm64)
+- **Decoupled Input Sources** Independent handling of seeds, wordlists, and domains (no cross-contamination)
+- **Optional Seed** Scan using only a wordlist or domain without requiring a seed keyword
+- **High-Concurrency Scanning** Worker pool architecture handles thousands of requests simultaneously
+- **CT Log Reconnaissance** Discover subdomains via Certificate Transparency logs (crt.sh) with automatic word extraction
+- **AI-Powered Generation** OpenAI, Ollama, Anthropic, or Gemini generate context-aware bucket name variations
+- **Permutation Engine** 780+ automatic variations per seed (suffixes, prefixes, years, regions)
+- **Adaptive Rate Limiting** AIMD algorithm auto-adjusts to avoid throttling and IP blocks
+- **Deep Inspection** AWS SDK integration reveals region, ACL status, and sample objects
+- **Live Progress Bar** Real-time TUI showing scanned count, RPS, ETA, and discovery stats
+- **HTTP/2 & Connection Pooling** Optimized networking with keep-alives and connection reuse
+- **Smart Retry Logic** Automatic retries with exponential backoff for transient failures
+- **Custom DNS Resolver** Uses Google/Cloudflare DNS to prevent local resolver saturation
+- **Multiple Formats** Export results as JSON or TXT for post-processing
+- **Cross-Platform** Native binaries for Linux, macOS, and Windows (amd64 & arm64)
 
 ---
 
@@ -126,16 +126,61 @@ s3finder -s acme-corp -t 200 --rps 1000
 ```bash
 # Scan with 780+ permutations of a seed keyword
 s3finder -s acme-corp
+
+# Multi-word or mixed-case seeds are automatically split into variants
+s3finder -s "Acme Corp"        # → acme-corp, acmecorp, acme, corp, ...
+s3finder -s "My Company Name"  # → my-company-name, mycompanyname, my, company, name, ...
+
+# Quotes are required when the seed contains spaces
+# Single word or hyphenated seeds don't need quotes
+s3finder -s acme-corp
+s3finder -s acmecorp
 ```
 
 ### Wordlist Scanning (Raw Mode)
 
 Wordlists are now processed as raw inputs. They are **not** combined with the seed or permuted, giving you exact control over what is scanned.
 
+> [!TIP]
+> Looking for a good wordlist? Check out [bitquark/dnspop](https://github.com/bitquark/dnspop/tree/master/results) a collection of the most popular DNS names based on real-world data.
+
 ```bash
 # Scan exactly what is in the wordlist
 s3finder -w wordlists/common.txt
 ```
+
+### Seed List / PermList
+
+Use `--permlist` to provide a file where each line is treated as a seed and fully permuted — identical to running `--seed` for each line.
+
+```bash
+# Each line in seeds.txt is permuted like --seed
+s3finder -p seeds.txt
+
+# seeds.txt example:
+# acme-corp
+# MyCompany
+# amazon web services
+```
+
+### Custom Permutation Suffixes
+
+Use `--perm-suffixes` to replace the default suffix list with your own. This gives you full control over what variations are generated.
+
+```bash
+# Use a custom suffix list
+s3finder -s acme --perm-suffixes suffixes.txt
+
+# suffixes.txt example:
+# -backup
+# -prod
+# -tr
+# -2026
+# -internal
+```
+
+> [!NOTE]
+> `--perm-suffixes` **replaces** the default suffix list entirely. If you want to keep the defaults, include them in your file.
 
 ### CT Log Reconnaissance (As-Is Mode)
 
@@ -205,7 +250,9 @@ s3finder -s acme-corp --no-color
 | `--seed` | `-s` | | Target keyword for bucket name generation |
 | `--domain` | `-d` | | Target domain for CT log subdomain discovery |
 | `--ct-limit` | | `100` | Maximum subdomains to fetch from CT logs |
-| `--wordlist` | `-w` | | Path to wordlist file |
+| `--wordlist` | `-w` | | Path to wordlist file (raw, no permutations) |
+| `--permlist` | `-p` | | Path to seed list file (each line permuted like `--seed`) |
+| `--perm-suffixes` | | | Path to custom suffix list file (replaces default suffixes in permutation engine) |
 | `--threads` | `-t` | `50` | Number of concurrent workers |
 | `--rps` | | `150` | Maximum requests per second |
 | `--timeout` | | `15` | Request timeout in seconds |

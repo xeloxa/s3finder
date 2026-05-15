@@ -69,6 +69,8 @@ s3finder [command]</code></pre>
           <tbody>
             <tr><td><code>--seed</code></td><td><code>-s</code></td><td>Target keyword for bucket name generation (permuted)</td></tr>
             <tr><td><code>--wordlist</code></td><td><code>-w</code></td><td>Path to wordlist file (raw mode)</td></tr>
+            <tr><td><code>--permlist</code></td><td><code>-p</code></td><td>Path to seed list file (each line permuted like <code>--seed</code>)</td></tr>
+            <tr><td><code>--perm-suffixes</code></td><td></td><td>Path to custom suffix list (replaces default suffixes)</td></tr>
             <tr><td><code>--domain</code></td><td><code>-d</code></td><td>Target domain for CT log discovery (as-is mode)</td></tr>
           </tbody>
         </table>
@@ -77,13 +79,19 @@ s3finder [command]</code></pre>
         <p>s3finder features <strong>Decoupled Input Sources</strong>. Seeds, wordlists, and domains are processed independently to ensure precise scanning without unwanted combinations.</p>
 
         <h3>Seed Keyword (Permuted)</h3>
-        <p>The seed is used to generate 780+ automatic name variations (prefixes, suffixes, regions, etc.):</p>
+        <p>The seed is used to generate 780+ automatic name variations (prefixes, suffixes, regions, etc.). Multi-word or mixed-case seeds are automatically split into variants and each variant is permuted independently.</p>
         <div class="code-header"><span class="code-lang">bash</span></div>
-        <pre><code># Company name
+        <pre><code># Single word or hyphenated — no quotes needed
 s3finder -s acme-corp
+s3finder -s acmecorp
+
+# Multi-word or mixed-case — quotes required
+s3finder -s "Acme Corp"        # → acme-corp, acmecorp, acme, corp, ...
+s3finder -s "My Company Name"  # → my-company-name, mycompanyname, my, company, name, ...
 
 # Domain without TLD
 s3finder -s example</code></pre>
+        <p><strong>Note:</strong> Quotes are required when the seed contains spaces. Without quotes, the shell treats each word as a separate argument and the command will fail.</p>
 
         <h3>Wordlist (Raw Mode)</h3>
         <p>Wordlists are processed in raw mode. Entries are scanned exactly as they appear in the file, without permutations or seed mixing:</p>
@@ -93,6 +101,34 @@ s3finder -w wordlists/common.txt
 
 # Use custom wordlist
 s3finder -w /path/to/custom-wordlist.txt</code></pre>
+
+        <h3>Seed List / PermList</h3>
+        <p>Use <code>--permlist</code> to provide a file where each line is treated as a seed and fully permuted — identical to running <code>--seed</code> for each line.</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Each line in seeds.txt is permuted like --seed
+s3finder -p seeds.txt</code></pre>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code># seeds.txt example:
+acme-corp
+MyCompany
+amazon web services</code></pre>
+
+        <h3>Custom Permutation Suffixes</h3>
+        <p>Use <code>--perm-suffixes</code> to replace the default suffix list with your own. This gives you full control over what variations are generated for a seed.</p>
+        <div class="code-header"><span class="code-lang">bash</span></div>
+        <pre><code># Use a custom suffix list
+s3finder -s acme --perm-suffixes suffixes.txt
+
+# Combine with permlist
+s3finder -p seeds.txt --perm-suffixes suffixes.txt</code></pre>
+        <div class="code-header"><span class="code-lang">text</span></div>
+        <pre><code># suffixes.txt example:
+-backup
+-prod
+-tr
+-2026
+-internal</code></pre>
+        <p><strong>Note:</strong> <code>--perm-suffixes</code> replaces the default suffix list entirely. If you want to keep the defaults, include them in your file.</p>
 
         <h3>CT Log Subdomain Discovery (As-Is Mode)</h3>
         <p>Discovered subdomains are scanned exactly as found in Certificate Transparency logs. Additionally, unique words are extracted from subdomains to generate permutations for deeper scanning:</p>

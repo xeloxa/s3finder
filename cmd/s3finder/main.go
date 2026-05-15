@@ -48,7 +48,9 @@ Examples:
 
 	// Input flags
 	rootCmd.Flags().StringVarP(&cfg.Seed, "seed", "s", "", "Target keyword for bucket name generation")
-	rootCmd.Flags().StringVarP(&cfg.Wordlist, "wordlist", "w", "", "Path to wordlist file")
+	rootCmd.Flags().StringVarP(&cfg.Wordlist, "wordlist", "w", "", "Path to wordlist file (raw, no permutations)")
+	rootCmd.Flags().StringVarP(&cfg.PermList, "permlist", "p", "", "Path to seed list file (each line is permuted like -s)")
+	rootCmd.Flags().StringVar(&cfg.PermSuffixes, "perm-suffixes", "", "Path to custom suffix list file for permutation engine")
 	rootCmd.Flags().StringVarP(&cfg.Domain, "domain", "d", "", "Target domain for CT log subdomain discovery")
 	rootCmd.Flags().IntVar(&cfg.CTLimit, "ct-limit", cfg.CTLimit, "Maximum subdomains to fetch from CT logs")
 
@@ -82,8 +84,8 @@ Examples:
 
 func run(cmd *cobra.Command, args []string) error {
 	// Validate input sources
-	if cfg.Seed == "" && cfg.Wordlist == "" && cfg.Domain == "" && !cfg.AIEnabled {
-		return fmt.Errorf("at least one input source is required: --seed, --wordlist, --domain, or --ai")
+	if cfg.Seed == "" && cfg.Wordlist == "" && cfg.PermList == "" && cfg.Domain == "" && !cfg.AIEnabled {
+		return fmt.Errorf("at least one input source is required: --seed, --wordlist, --permlist, --domain, or --ai")
 	}
 
 	// Setup context with cancellation
@@ -225,6 +227,16 @@ func generateNames(ctx context.Context) ([]string, error) {
 
 	engine := permutation.Default()
 
+	// Load custom suffixes if provided
+	if cfg.PermSuffixes != "" {
+		suffixes, err := config.LoadWordlist(cfg.PermSuffixes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load perm-suffixes: %w", err)
+		}
+		engine.Suffixes = suffixes
+		fmt.Printf("Loaded %d custom suffixes for permutation engine\n", len(suffixes))
+	}
+
 	// 1. CT Log subdomain discovery (if domain provided)
 	if cfg.Domain != "" {
 		fmt.Printf("Fetching subdomains from CT logs for %s...\n", cfg.Domain)
@@ -264,9 +276,13 @@ func generateNames(ctx context.Context) ([]string, error) {
 
 	// 2. Permutation engine on seed
 	if cfg.Seed != "" {
-		permNames := engine.Generate(cfg.Seed)
-		add(permNames)
-		fmt.Printf("Permutation engine generated %d names from seed: %s\n", len(permNames), cfg.Seed)
+		variants := permutation.ExpandSeed(cfg.Seed)
+		before := len(allNames)
+		for _, v := range variants {
+			add(engine.Generate(v))
+		}
+		permNames := len(allNames) - before
+		fmt.Printf("Permutation engine generated %d names from seed: %s (%d variants: %s)\n", permNames, cfg.Seed, len(variants), strings.Join(variants, ", "))
 	}
 
 	// 3. Wordlist (Raw)
@@ -277,6 +293,21 @@ func generateNames(ctx context.Context) ([]string, error) {
 		}
 		add(words)
 		fmt.Printf("Wordlist loaded %d names\n", len(words))
+	}
+
+	// 4. PermList (each line treated as a seed and permuted)
+	if cfg.PermList != "" {
+		seeds, err := config.LoadWordlist(cfg.PermList)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load permlist: %w", err)
+		}
+		before := len(allNames)
+		for _, s := range seeds {
+			for _, v := range permutation.ExpandSeed(s) {
+				add(engine.Generate(v))
+			}
+		}
+		fmt.Printf("PermList generated %d names from %d seeds\n", len(allNames)-before, len(seeds))
 	}
 
 	// 4. AI generation
