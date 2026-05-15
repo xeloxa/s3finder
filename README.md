@@ -253,6 +253,9 @@ s3finder -s acme-corp --no-color
 | `--wordlist` | `-w` | | Path to wordlist file (raw, no permutations) |
 | `--permlist` | `-p` | | Path to seed list file (each line permuted like `--seed`) |
 | `--perm-suffixes` | | | Path to custom suffix list file (replaces default suffixes in permutation engine) |
+| `--perm-prefixes` | | | Path to custom prefix list file (replaces default prefixes in permutation engine) |
+| `--perm-years` | | | Path to custom year list file (replaces default years in permutation engine) |
+| `--perm-regions` | | | Path to custom region list file (replaces default regions in permutation engine) |
 | `--threads` | `-t` | `50` | Number of concurrent workers |
 | `--rps` | | `150` | Maximum requests per second |
 | `--timeout` | | `15` | Request timeout in seconds |

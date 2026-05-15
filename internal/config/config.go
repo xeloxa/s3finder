@@ -14,11 +14,14 @@ type Config struct {
 	DeepInspect bool    `mapstructure:"deep_inspect"`
 
 	// Input settings
-	Seed        string `mapstructure:"seed"`
-	Wordlist    string `mapstructure:"wordlist"`
-	PermList    string `mapstructure:"perm_list"`
+	Seed         string `mapstructure:"seed"`
+	Wordlist     string `mapstructure:"wordlist"`
+	PermList     string `mapstructure:"perm_list"`
 	PermSuffixes string `mapstructure:"perm_suffixes"`
-	Domain      string `mapstructure:"domain"`
+	PermPrefixes string `mapstructure:"perm_prefixes"`
+	PermYears    string `mapstructure:"perm_years"`
+	PermRegions  string `mapstructure:"perm_regions"`
+	Domain       string `mapstructure:"domain"`
 	CTLimit  int    `mapstructure:"ct_limit"`
 
 	// AI settings

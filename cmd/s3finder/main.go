@@ -51,6 +51,9 @@ Examples:
 	rootCmd.Flags().StringVarP(&cfg.Wordlist, "wordlist", "w", "", "Path to wordlist file (raw, no permutations)")
 	rootCmd.Flags().StringVarP(&cfg.PermList, "permlist", "p", "", "Path to seed list file (each line is permuted like -s)")
 	rootCmd.Flags().StringVar(&cfg.PermSuffixes, "perm-suffixes", "", "Path to custom suffix list file for permutation engine")
+	rootCmd.Flags().StringVar(&cfg.PermPrefixes, "perm-prefixes", "", "Path to custom prefix list file for permutation engine")
+	rootCmd.Flags().StringVar(&cfg.PermYears, "perm-years", "", "Path to custom year list file for permutation engine")
+	rootCmd.Flags().StringVar(&cfg.PermRegions, "perm-regions", "", "Path to custom region list file for permutation engine")
 	rootCmd.Flags().StringVarP(&cfg.Domain, "domain", "d", "", "Target domain for CT log subdomain discovery")
 	rootCmd.Flags().IntVar(&cfg.CTLimit, "ct-limit", cfg.CTLimit, "Maximum subdomains to fetch from CT logs")
 
@@ -235,6 +238,36 @@ func generateNames(ctx context.Context) ([]string, error) {
 		}
 		engine.Suffixes = suffixes
 		fmt.Printf("Loaded %d custom suffixes for permutation engine\n", len(suffixes))
+	}
+
+	// Load custom prefixes if provided
+	if cfg.PermPrefixes != "" {
+		prefixes, err := config.LoadWordlist(cfg.PermPrefixes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load perm-prefixes: %w", err)
+		}
+		engine.Prefixes = prefixes
+		fmt.Printf("Loaded %d custom prefixes for permutation engine\n", len(prefixes))
+	}
+
+	// Load custom years if provided
+	if cfg.PermYears != "" {
+		years, err := config.LoadWordlist(cfg.PermYears)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load perm-years: %w", err)
+		}
+		engine.Years = years
+		fmt.Printf("Loaded %d custom years for permutation engine\n", len(years))
+	}
+
+	// Load custom regions if provided
+	if cfg.PermRegions != "" {
+		regions, err := config.LoadWordlist(cfg.PermRegions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load perm-regions: %w", err)
+		}
+		engine.Regions = regions
+		fmt.Printf("Loaded %d custom regions for permutation engine\n", len(regions))
 	}
 
 	// 1. CT Log subdomain discovery (if domain provided)
