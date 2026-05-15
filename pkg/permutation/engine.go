@@ -3,9 +3,89 @@ package permutation
 import (
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 var validBucketName = regexp.MustCompile(`^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$`)
+
+// tokenize splits a seed into lowercase tokens by splitting on spaces, hyphens,
+// underscores, dots, and camelCase boundaries.
+func tokenize(seed string) []string {
+	// Insert space before uppercase letters that follow lowercase (camelCase split)
+	var spaced strings.Builder
+	runes := []rune(seed)
+	for i, r := range runes {
+		if i > 0 && unicode.IsUpper(r) && unicode.IsLower(runes[i-1]) {
+			spaced.WriteRune(' ')
+		}
+		spaced.WriteRune(r)
+	}
+
+	// Split on non-alphanumeric characters
+	raw := regexp.MustCompile(`[^a-zA-Z0-9]+`).Split(spaced.String(), -1)
+
+	var tokens []string
+	for _, t := range raw {
+		t = strings.ToLower(strings.TrimSpace(t))
+		if t != "" {
+			tokens = append(tokens, t)
+		}
+	}
+	return tokens
+}
+
+// ExpandSeed takes a raw seed (e.g. "Acme Corp" or "my-company") and returns a deduplicated
+// list of normalized variants to run permutations against.
+//
+// For "Acme Corp" it produces:
+//
+//	acme-corp, acmecorp, acme, corp
+func ExpandSeed(seed string) []string {
+	tokens := tokenize(seed)
+	if len(tokens) == 0 {
+		return nil
+	}
+
+	seen := make(map[string]struct{})
+	var variants []string
+
+	add := func(s string) {
+		s = strings.ToLower(s)
+		if s == "" {
+			return
+		}
+		if _, ok := seen[s]; !ok {
+			seen[s] = struct{}{}
+			variants = append(variants, s)
+		}
+	}
+
+	// Full joined forms
+	add(strings.Join(tokens, "-"))
+	add(strings.Join(tokens, ""))
+	add(strings.Join(tokens, "."))
+
+	// Individual tokens
+	for _, t := range tokens {
+		add(t)
+	}
+
+	// All separator combinations between tokens (e.g. acme-corp, acmecorp)
+	if len(tokens) > 1 {
+		generateCombinations(tokens, 0, tokens[0], []string{"-", ""}, add)
+	}
+
+	// Consecutive sub-sequences (length 2..len)
+	for length := 2; length <= len(tokens); length++ {
+		for start := 0; start+length <= len(tokens); start++ {
+			sub := tokens[start : start+length]
+			add(strings.Join(sub, "-"))
+			add(strings.Join(sub, ""))
+		}
+	}
+
+	return variants
+}
 
 // Engine generates bucket name permutations from seed keywords.
 type Engine struct {
@@ -170,7 +250,17 @@ func (e *Engine) GenerateFromWordlist(words []string, seed string) []string {
 	return results
 }
 
-// IsValidBucketName checks if a name conforms to S3 bucket naming rules.
+// generateCombinations recursively builds all separator-combination variants of tokens.
+// e.g. ["acme","corp","dev"] → acme-corp-dev, acme-corpdev, acmecorp-dev, acmecorpdev
+func generateCombinations(tokens []string, idx int, current string, seps []string, add func(string)) {
+	if idx == len(tokens)-1 {
+		add(current)
+		return
+	}
+	for _, sep := range seps {
+		generateCombinations(tokens, idx+1, current+sep+tokens[idx+1], seps, add)
+	}
+}
 func IsValidBucketName(name string) bool {
 	if len(name) < 3 || len(name) > 63 {
 		return false

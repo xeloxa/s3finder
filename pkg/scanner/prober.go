@@ -122,14 +122,7 @@ func (p *Prober) Check(ctx context.Context, bucket string) *ProbeResponse {
 
 		url := fmt.Sprintf("https://%s.s3.amazonaws.com", bucket)
 
-		req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
-		if err != nil {
-			resp.Result = BucketError
-			resp.Error = err
-			return resp
-		}
-
-		httpResp, err := p.client.Do(req)
+		statusCode, err := p.doRequest(ctx, "HEAD", url)
 		if err != nil {
 			if attempt < maxRetries {
 				time.Sleep(time.Duration(attempt+1) * 200 * time.Millisecond)
@@ -141,17 +134,23 @@ func (p *Prober) Check(ctx context.Context, bucket string) *ProbeResponse {
 			return resp
 		}
 
+		// Some buckets block HEAD but allow GET — verify with GET on 404
+		if statusCode == 404 {
+			if getCode, err := p.doRequest(ctx, "GET", url); err == nil && getCode != 404 {
+				statusCode = getCode
+			}
+		}
+
 		// Check for 5xx errors which should be retried
-		if httpResp.StatusCode >= 500 && attempt < maxRetries {
-			p.limiter.RecordResponse(httpResp.StatusCode)
-			httpResp.Body.Close()
+		if statusCode >= 500 && attempt < maxRetries {
+			p.limiter.RecordResponse(statusCode)
 			continue
 		}
 
-		resp.StatusCode = httpResp.StatusCode
-		p.limiter.RecordResponse(httpResp.StatusCode)
+		resp.StatusCode = statusCode
+		p.limiter.RecordResponse(statusCode)
 
-		switch httpResp.StatusCode {
+		switch statusCode {
 		case 200:
 			resp.Result = BucketExists
 		case 403:
@@ -163,14 +162,27 @@ func (p *Prober) Check(ctx context.Context, bucket string) *ProbeResponse {
 			resp.Result = BucketForbidden
 		default:
 			resp.Result = BucketError
-			resp.Error = fmt.Errorf("unexpected status code: %d", httpResp.StatusCode)
+			resp.Error = fmt.Errorf("unexpected status code: %d", statusCode)
 		}
 
-		httpResp.Body.Close()
 		return resp
 	}
 
 	return resp
+}
+
+// doRequest performs an HTTP request and returns the status code.
+func (p *Prober) doRequest(ctx context.Context, method, url string) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	resp.Body.Close()
+	return resp.StatusCode, nil
 }
 
 // CurrentRPS returns the current rate limit.
